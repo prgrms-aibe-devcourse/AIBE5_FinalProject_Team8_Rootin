@@ -9,6 +9,9 @@ const NAV = [
   { id: 'profile',   label: '프로필',    icon: Icon.user },
 ];
 
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+
 function Sidebar({ current, onNav }) {
   return (
     <aside style={{
