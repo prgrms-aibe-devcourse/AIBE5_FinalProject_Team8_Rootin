@@ -1,9 +1,14 @@
+import { useState, useEffect } from 'react';
+import { POTS, TEMPLATES } from './data.jsx';
+import { Icon, Btn, SectionHeader, ProgressBar } from './ui.jsx';
+import { Plant } from './plants.jsx';
+
 // TIL 작성 에디터
 
 function EditorScreen({ onNav }) {
-  const [potId, setPotId] = React.useState('coding');
-  const [title, setTitle] = React.useState('CSS Container Queries 처음 써본 날');
-  const [body, setBody] = React.useState(
+  const [potId, setPotId] = useState('coding');
+  const [title, setTitle] = useState('CSS Container Queries 처음 써본 날');
+  const [body, setBody] = useState(
 `오늘 알게 된 것
 - @container 선언만 있으면 컴포넌트 단위로 반응형이 가능하다
 - 컨테이너 박스에 \`container-type: inline-size\` 를 줘야 동작함
@@ -22,11 +27,11 @@ function EditorScreen({ onNav }) {
 다음 액션
 - Rootin의 카드 컴포넌트에 적용해보기
 - 디자인 시스템 문서에 한 단락 추가`);
-  const [tags, setTags] = React.useState(['css', 'frontend', 'container-queries']);
-  const [tagInput, setTagInput] = React.useState('');
-  const [savedAt, setSavedAt] = React.useState('방금 전');
+  const [tags, setTags] = useState(['css', 'frontend', 'container-queries']);
+  const [tagInput, setTagInput] = useState('');
+  const [savedAt, setSavedAt] = useState('방금 전');
 
-  React.useEffect(() => {
+  useEffect(() => {
     const t = setInterval(() => setSavedAt('방금 전'), 30000);
     return () => clearInterval(t);
   }, []);
@@ -222,4 +227,4 @@ function EditorScreen({ onNav }) {
   );
 }
 
-Object.assign(window, { EditorScreen });
+export { EditorScreen };

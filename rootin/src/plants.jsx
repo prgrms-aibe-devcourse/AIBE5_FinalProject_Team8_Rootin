@@ -1,3 +1,5 @@
+import { PixelPlant } from './pixel-plants.jsx';
+
 // Plant SVG components — extracted from moodboard / growth metaphor
 // Stages: seed (씨앗) → sprout (새싹) → leaf (잎) → bloom (개화) → full (만개)
 
@@ -131,6 +133,4 @@ function RootinLogo({ size = 36 }) {
   );
 }
 
-Object.assign(window, {
-  Plant, PotIcon, RootinLogo, STAGE_META, tilCountToStage,
-});
+export { Plant, PotIcon, RootinLogo, STAGE_META, tilCountToStage };

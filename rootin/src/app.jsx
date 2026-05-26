@@ -1,3 +1,12 @@
+import { useState } from 'react';
+import { USER, POTS, DEX } from './data.jsx';
+import { Icon } from './ui.jsx';
+import { Plant, RootinLogo } from './plants.jsx';
+import { DashboardScreen } from './screens-dashboard.jsx';
+import { EditorScreen } from './screens-editor.jsx';
+import { GardenScreen, PotDetailScreen } from './screens-garden.jsx';
+import { CollectionScreen, AIScreen, ProfileScreen, AuthScreen } from './screens-rest.jsx';
+
 // App shell — sidebar + topbar + screen routing
 
 const NAV = [
@@ -131,9 +140,9 @@ function TopBar({ title, subtitle, onLogout }) {
 }
 
 function App() {
-  const [screen, setScreen] = React.useState('dashboard');
-  const [authed, setAuthed] = React.useState(true);
-  const [potFocus, setPotFocus] = React.useState(null); // pot id when entering detail
+  const [screen, setScreen] = useState('dashboard');
+  const [authed, setAuthed] = useState(true);
+  const [potFocus, setPotFocus] = useState(null); // pot id when entering detail
 
   const titles = {
     dashboard:  { title: '안녕, 소연 🌱', subtitle: 'Dashboard · 2026.05.22 금요일' },
@@ -168,4 +177,5 @@ function App() {
   );
 }
 
-Object.assign(window, { App, NAV });
+
+export default App;

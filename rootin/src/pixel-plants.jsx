@@ -473,4 +473,4 @@ function PixelPlant({ species = 'seed', stage = 'seed', size = 64, locked = fals
   );
 }
 
-Object.assign(window, { PixelPlant, PIXEL_SPECIES, PIXEL_RENDERERS });
+export { PixelPlant, PIXEL_SPECIES, PIXEL_RENDERERS };
