@@ -1,0 +1,707 @@
+// Collection (식물도감), AI, Profile, Auth screens
+
+// ============================
+// Evolution chain card (pokedex style)
+// ============================
+function EvoCard({ entry }) {
+  const stages = ['seed', 'sprout', 'leaf', 'bloom', 'full'];
+  const stageOrder = ['씨앗', '새싹', '잎', '개화', '만개'];
+  const stageMap = { '씨앗': 'seed', '새싹': 'sprout', '잎': 'leaf', '개화': 'bloom', '만개': 'full' };
+  const reachedIdx = stages.indexOf(entry.currentStage);
+  const speciesInfo = PIXEL_SPECIES[entry.species];
+  const isHarvested = entry.state === 'harvested';
+  const isRare = entry.rarity === 'rare';
+  const isSecret = entry.rarity === 'secret';
+  const isLocked = entry.state === 'locked';
+
+  if (isLocked) {
+    return (
+      <div style={{
+        position: 'relative',
+        background: '#fff', borderRadius: 14,
+        border: '0.5px solid #f0c4cc',
+        padding: '16px 20px 14px',
+        opacity: 0.85,
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 11, color: 'var(--ink-3)', fontFamily: 'var(--font-mono)' }}>#???</span>
+            <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink-2)' }}>{entry.label}</span>
+          </div>
+          <Pill tone="pink">🔴 비밀종</Pill>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6 }}>
+          {stages.map((s, i) => (
+            <div key={s} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+              <div style={{
+                width: 56, height: 56, borderRadius: 6,
+                background: '#fcebeb', border: '0.5px solid #f7c1c1',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                filter: 'brightness(0.4)',
+              }}>
+                {i === 0 ? <PixelPlant species="secret" stage="seed" size={42} locked /> : null}
+              </div>
+              <div style={{ fontSize: 10, color: 'var(--ink-4)' }}>???</div>
+            </div>
+          ))}
+        </div>
+        <div style={{
+          position: 'absolute', inset: 0, borderRadius: 14,
+          background: 'rgba(247, 249, 247, 0.85)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6,
+        }}>
+          <div style={{ fontSize: 20 }}>🔒</div>
+          <div style={{ fontSize: 12, color: 'var(--ink-2)', fontFamily: 'var(--font-display)' }}>
+            {entry.unlockHint}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const borderColor = isRare ? '#ccc9f0' : 'var(--line-1)';
+
+  return (
+    <div style={{
+      background: '#fff', borderRadius: 14,
+      border: `0.5px solid ${borderColor}`,
+      padding: '16px 20px 14px',
+    }}>
+      {/* meta row */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 11, color: 'var(--ink-3)', fontFamily: 'var(--font-mono)', whiteSpace: 'nowrap' }}>#{entry.no}</span>
+          <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--navy-700)', fontFamily: 'var(--font-display)', whiteSpace: 'nowrap' }}>{entry.label}</span>
+          {entry.pot && (
+            <span style={{ fontSize: 12, color: 'var(--ink-3)', whiteSpace: 'nowrap' }}>
+              · {entry.pot.emoji} {entry.pot.name} 화분 {entry.pot.round}회차
+            </span>
+          )}
+        </div>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <Pill tone={isRare ? 'navy' : 'green'}>{isRare ? '✦ 희귀종' : '일반종'}</Pill>
+          {isHarvested
+            ? <Pill tone="navy">수확 완료</Pill>
+            : <Pill tone="green">{speciesInfo?.stages[entry.currentStage]?.stage} 중</Pill>
+          }
+        </div>
+      </div>
+
+      {/* evolution chain */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6, alignItems: 'flex-end' }}>
+        {stages.map((s, i) => {
+          const passed = i <= reachedIdx;
+          const isCurrent = i === reachedIdx && !isHarvested;
+          const date = entry.levels[stageOrder[i]];
+          const stageName = speciesInfo?.stages[s]?.name || stageOrder[i];
+
+          let bg = '#f7f9f7', border = '0.5px solid var(--line-1)';
+          if (passed) {
+            bg = isRare ? '#eef2fa' : (isHarvested ? '#e6f1fb' : '#eaf3de');
+            border = isRare ? '0.5px solid #afa9ec' : (isHarvested ? '0.5px solid #185fa5' : '0.5px solid #c8e0a8');
+          }
+          if (isCurrent) {
+            bg = isRare ? '#eef2fa' : '#e1f5ee';
+            border = isRare ? '1.5px solid #534ab7' : '1.5px solid #0f6e56';
+          }
+
+          return (
+            <div key={s} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, position: 'relative' }}>
+              {i < 4 && (
+                <div style={{
+                  position: 'absolute', right: -6, top: 22,
+                  fontSize: 14, color: 'var(--ink-4)', zIndex: 1,
+                }}>›</div>
+              )}
+              <div style={{
+                width: 56, height: 56, borderRadius: 6,
+                background: bg, border, position: 'relative',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <PixelPlant species={entry.species} stage={s} size={42} locked={!passed} />
+              </div>
+              <div style={{ fontSize: 10, color: passed ? 'var(--ink-1)' : 'var(--ink-4)', fontWeight: passed ? 500 : 400 }}>
+                {stageName}
+              </div>
+              {date && (
+                <div style={{ fontSize: 9, color: isHarvested ? '#185fa5' : '#0f6e56', fontFamily: 'var(--font-mono)' }}>
+                  {date}
+                </div>
+              )}
+              <div style={{ fontSize: 9, color: 'var(--ink-4)' }}>
+                {stageOrder[i]} {isCurrent && '←'}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* footer */}
+      <div style={{ display: 'flex', gap: 18, marginTop: 12, paddingTop: 10, borderTop: '0.5px solid var(--line-1)', fontSize: 11, color: 'var(--ink-3)' }}>
+        {!isHarvested && (
+          <span>현재 단계 <b style={{ color: 'var(--ink-1)' }}>{speciesInfo?.stages[entry.currentStage]?.stage} ({reachedIdx + 1}/5)</b></span>
+        )}
+        <span>화분 레벨 <b style={{ color: 'var(--ink-1)' }}>Lv.{entry.potLevel}</b></span>
+        <span>시작일 <b style={{ color: 'var(--ink-1)' }}>{entry.startedAt}</b></span>
+        {isHarvested && <span>수확일 <b style={{ color: 'var(--ink-1)' }}>{entry.harvestedAt}</b></span>}
+      </div>
+    </div>
+  );
+}
+
+function CollectionScreen() {
+  const growing = DEX.filter(d => d.state === 'growing');
+  const harvested = DEX.filter(d => d.state === 'harvested');
+  const locked = DEX.filter(d => d.state === 'locked');
+  const unlocked = DEX.filter(d => d.state !== 'locked').length;
+  const total = DEX.length;
+
+  return (
+    <div style={{ padding: 32, maxWidth: 1100, margin: '0 auto' }}>
+
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, gap: 16, flexWrap: 'wrap' }}>
+        <div style={{ flex: '1 1 320px' }}>
+          <div className="eyebrow" style={{ color: 'var(--green-700)' }}>식물 도감</div>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 700, color: 'var(--navy-700)', marginTop: 6, letterSpacing: '-0.02em' }}>
+            직접 키워낸 식물의 진화 기록
+          </h2>
+          <div style={{ fontSize: 13, color: 'var(--ink-2)', marginTop: 6 }}>
+            화분에서 자란 식물의 모든 성장 과정을 도감에 모아요. 호버하면 화분 레벨과 수확일을 볼 수 있어요.
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{
+            background: '#fff', border: '0.5px solid var(--line-1)', borderRadius: 10,
+            padding: '10px 18px', textAlign: 'center', minWidth: 80,
+          }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, color: 'var(--navy-700)' }}>{growing.length}</div>
+            <div style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 2 }}>키우는 중</div>
+          </div>
+          <div style={{
+            background: '#fff', border: '0.5px solid var(--line-1)', borderRadius: 10,
+            padding: '10px 18px', textAlign: 'center', minWidth: 80,
+          }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, color: 'var(--navy-700)' }}>{harvested.length}</div>
+            <div style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 2 }}>수확 완료</div>
+          </div>
+          <div style={{
+            background: '#fff', border: '0.5px solid var(--line-1)', borderRadius: 10,
+            padding: '10px 18px', textAlign: 'center', minWidth: 80,
+          }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, color: '#3b6d11' }}>{unlocked} / {total}</div>
+            <div style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 2 }}>종 해금</div>
+          </div>
+        </div>
+      </div>
+
+      {/* 키우는 중 */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, marginTop: 8 }}>
+        <span style={{ fontSize: 13, color: 'var(--ink-2)', fontFamily: 'var(--font-display)', fontWeight: 500, whiteSpace: 'nowrap' }}>🌱 키우는 중</span>
+        <Pill tone="green">{growing.length}종</Pill>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 30 }}>
+        {growing.map(e => <EvoCard key={e.no} entry={e} />)}
+      </div>
+
+      {/* 수확 완료 */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+        <span style={{ fontSize: 13, color: 'var(--ink-2)', fontFamily: 'var(--font-display)', fontWeight: 500, whiteSpace: 'nowrap' }}>🏆 수확 완료</span>
+        <Pill tone="navy">{harvested.length}종</Pill>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 30 }}>
+        {harvested.map(e => <EvoCard key={e.no} entry={e} />)}
+      </div>
+
+      {/* 미해금 */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+        <span style={{ fontSize: 13, color: 'var(--ink-2)', fontFamily: 'var(--font-display)', fontWeight: 500, whiteSpace: 'nowrap' }}>🔒 미해금</span>
+        <Pill tone="pink">{locked.length}종</Pill>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {locked.map(e => <EvoCard key={e.no} entry={e} />)}
+      </div>
+    </div>
+  );
+}
+
+// === AI Screen ===
+
+function AIScreen() {
+  const [mode, setMode] = React.useState('quiz'); // quiz | summary
+  const [selected, setSelected] = React.useState(['t1', 't4', 't6']);
+  const [generating, setGenerating] = React.useState(false);
+
+  const toggle = (id) => setSelected(selected.includes(id) ? selected.filter(x => x !== id) : [...selected, id]);
+
+  return (
+    <div style={{ padding: 32, display: 'grid', gridTemplateColumns: '360px 1fr', gap: 24, maxWidth: 1280, margin: '0 auto' }}>
+
+      {/* Left — source picker */}
+      <div>
+        <SectionHeader eyebrow="입력" title="학습 소스 선택" />
+
+        <Card padding={18} style={{ marginBottom: 16 }}>
+          <div className="eyebrow" style={{ marginBottom: 8 }}>목적</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={() => setMode('quiz')} style={{
+              flex: 1, padding: '12px 10px', borderRadius: 10,
+              background: mode === 'quiz' ? 'var(--navy-700)' : '#fff',
+              color: mode === 'quiz' ? '#fff' : 'var(--ink-2)',
+              border: '0.5px solid ' + (mode === 'quiz' ? 'var(--navy-700)' : 'var(--line-2)'),
+              fontSize: 12.5, fontWeight: 500, textAlign: 'left',
+            }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, marginBottom: 4 }}>📝 복습 문제 생성</div>
+              <div style={{ fontSize: 10.5, opacity: 0.7, lineHeight: 1.5 }}>TIL에서 5문제 자동 생성</div>
+            </button>
+            <button onClick={() => setMode('summary')} style={{
+              flex: 1, padding: '12px 10px', borderRadius: 10,
+              background: mode === 'summary' ? 'var(--navy-700)' : '#fff',
+              color: mode === 'summary' ? '#fff' : 'var(--ink-2)',
+              border: '0.5px solid ' + (mode === 'summary' ? 'var(--navy-700)' : 'var(--line-2)'),
+              fontSize: 12.5, fontWeight: 500, textAlign: 'left',
+            }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, marginBottom: 4 }}>✨ TIL 요약</div>
+              <div style={{ fontSize: 10.5, opacity: 0.7, lineHeight: 1.5 }}>핵심 개념을 한 문서로</div>
+            </button>
+          </div>
+        </Card>
+
+        <Card padding={18}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+            <div className="eyebrow">학습할 TIL · {selected.length}개 선택</div>
+            <button style={{ fontSize: 11, color: 'var(--green-700)', fontFamily: 'var(--font-display)', fontWeight: 500 }}>전체 선택</button>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 420, overflow: 'auto', paddingRight: 4 }} className="scrollbar">
+            {TILS.map(t => {
+              const pot = POTS.find(p => p.id === t.potId);
+              const checked = selected.includes(t.id);
+              return (
+                <button key={t.id} onClick={() => toggle(t.id)} style={{
+                  display: 'flex', alignItems: 'flex-start', gap: 10,
+                  padding: '10px 12px', borderRadius: 9,
+                  background: checked ? 'var(--green-50)' : '#fff',
+                  border: '0.5px solid ' + (checked ? 'var(--green-200)' : 'var(--line-1)'),
+                  textAlign: 'left',
+                }}>
+                  <div style={{
+                    width: 18, height: 18, borderRadius: 5,
+                    background: checked ? 'var(--green-500)' : '#fff',
+                    border: checked ? 'none' : '1px solid var(--line-2)',
+                    color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    marginTop: 2, flexShrink: 0,
+                  }}>{checked && Icon.check}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 11, color: 'var(--ink-3)', fontFamily: 'var(--font-mono)' }}>{pot.emoji} {pot.name} · {t.date}</div>
+                    <div style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--ink-1)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.title}</div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          <Btn variant="green" size="lg" style={{ width: '100%', marginTop: 14 }} onClick={() => { setGenerating(true); setTimeout(() => setGenerating(false), 800); }}>
+            {mode === 'quiz' ? '🌱 복습 문제 만들기' : '✨ 요약 생성하기'} · 80 토큰 사용
+          </Btn>
+          <div style={{ marginTop: 8, fontSize: 11, color: 'var(--ink-3)', textAlign: 'center' }}>
+            현재 보유: <b style={{ color: 'var(--navy-700)' }}>{USER.points}P</b> · 포인트는 활동으로 적립돼요
+          </div>
+        </Card>
+      </div>
+
+      {/* Right — output */}
+      <div>
+        <SectionHeader eyebrow="AI 결과지" title={mode === 'quiz' ? '복습 문제 (5문항)' : 'TIL 요약 결과지'} action={
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Btn variant="secondary" size="sm">다시 생성</Btn>
+            <Btn variant="primary" size="sm">결과 저장</Btn>
+          </div>
+        } />
+
+        <Card padding={28}>
+          {mode === 'quiz' ? <QuizResult /> : <SummaryResult />}
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+function QuizResult() {
+  const quiz = [
+    {
+      q: 'CSS Container Queries에서 부모 요소에 반드시 지정해야 하는 속성은?',
+      choices: ['display: grid', 'container-type: inline-size', '@media (min-width)', 'aspect-ratio: 1'],
+      answer: 1,
+      from: 'CSS Container Queries 처음 써본 날',
+      myAnswer: 1,
+    },
+    {
+      q: 'PostgreSQL에서 전문검색(full-text search)에 가장 적합한 인덱스는?',
+      choices: ['B-tree', 'Hash', 'GIN', 'BRIN'],
+      answer: 2,
+      from: 'PostgreSQL 인덱스 종류 정리',
+      myAnswer: null,
+    },
+    {
+      q: 'React Server Component에서 클라이언트 컴포넌트로 전환할 때 사용하는 지시어는?',
+      choices: ['"use server"', '"use client"', '"use browser"', '"use hook"'],
+      answer: 1,
+      from: 'React Server Component 멘탈모델',
+      myAnswer: null,
+    },
+  ];
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+      <div style={{
+        padding: 16, background: 'var(--bg-soft)', borderRadius: 10,
+        fontSize: 12.5, color: 'var(--ink-2)', borderLeft: '2px solid var(--green-500)',
+      }}>
+        💡 선택한 3개의 TIL에서 핵심 개념 5문항을 추출했어요. 답을 적고 저장하면 학습 기록에 남아요.
+      </div>
+
+      {quiz.map((q, i) => (
+        <div key={i}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: 'var(--green-700)' }}>0{i + 1}</span>
+            <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--ink-1)', lineHeight: 1.6, flex: 1 }}>{q.q}</span>
+          </div>
+          <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8, paddingLeft: 28 }}>
+            {q.choices.map((c, ci) => {
+              const isMine = q.myAnswer === ci;
+              const isAns = q.answer === ci;
+              return (
+                <div key={ci} style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '10px 14px', borderRadius: 9,
+                  background: isMine ? (isAns ? 'var(--green-50)' : '#fff') : '#fff',
+                  border: '0.5px solid ' + (isMine && isAns ? 'var(--green-500)' : 'var(--line-1)'),
+                  fontSize: 13, color: 'var(--ink-1)',
+                }}>
+                  <div style={{
+                    width: 18, height: 18, borderRadius: '50%',
+                    background: isMine ? 'var(--green-500)' : '#fff',
+                    border: '1px solid ' + (isMine ? 'var(--green-500)' : 'var(--line-2)'),
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                  }}>
+                    {isMine && <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#fff' }} />}
+                  </div>
+                  <span>{c}</span>
+                  {isMine && isAns && <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--green-700)', fontFamily: 'var(--font-display)', fontWeight: 600 }}>✓ 정답</span>}
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ paddingLeft: 28, marginTop: 8, fontSize: 11, color: 'var(--ink-3)', fontFamily: 'var(--font-mono)' }}>
+            출처 — <i>{q.from}</i>
+          </div>
+          <div style={{ paddingLeft: 28, marginTop: 8 }}>
+            <textarea placeholder="내 답변 / 메모를 작성하세요" style={{
+              width: '100%', minHeight: 48,
+              padding: '10px 12px', borderRadius: 8,
+              border: '0.5px solid var(--line-1)',
+              fontSize: 12.5, color: 'var(--ink-1)',
+              outline: 'none', resize: 'vertical',
+              background: '#fcfdfb',
+            }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SummaryResult() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+      <div style={{
+        padding: 16, background: 'var(--bg-soft)', borderRadius: 10,
+        fontSize: 12.5, color: 'var(--ink-2)', borderLeft: '2px solid var(--green-500)',
+      }}>
+        🌿 선택한 3개 TIL의 핵심을 한 문서로 묶었어요.
+      </div>
+      <div>
+        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: 'var(--navy-700)', marginBottom: 8 }}>
+          이번 주, 프론트엔드 레이아웃의 진화
+        </h3>
+        <div style={{ fontSize: 13.5, color: 'var(--ink-1)', lineHeight: 1.85 }}>
+          이번 주의 키워드는 <b>"컨테이너 단위"</b>와 <b>"경계의 명확화"</b>다. CSS Container Queries는 미디어쿼리가 가진 "페이지 폭"이라는 한계를 넘어, 컴포넌트가 자신이 놓인 부모 박스에 반응하도록 만든다. 이는 디자인 시스템과 자연스럽게 맞닿는다.
+          <br /><br />
+          비슷한 맥락에서, React Server Component는 클라이언트와 서버의 경계를 <code style={{ fontFamily: 'var(--font-mono)', background: 'var(--bg-soft)', padding: '1px 6px', borderRadius: 4 }}>"use client"</code> 지시어로 명확하게 가른다. 둘 다 "이 컴포넌트가 어디에서, 무엇에 의존해 동작하는가"를 코드로 드러내는 흐름이다.
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        {[
+          { title: '핵심 개념', items: ['Container Queries', 'use client / use server', 'B-tree / GIN 인덱스'] },
+          { title: '다음 학습 추천', items: ['CSS Subgrid 정리', 'RSC + Suspense 흐름', 'GIN 인덱스 실전 쿼리'] },
+        ].map((s, i) => (
+          <div key={i} style={{ padding: 16, borderRadius: 10, background: 'var(--bg-soft)' }}>
+            <div className="eyebrow" style={{ marginBottom: 8 }}>{s.title}</div>
+            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {s.items.map((x, j) => (
+                <li key={j} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, color: 'var(--ink-1)' }}>
+                  <span style={{ width: 4, height: 4, borderRadius: 2, background: 'var(--green-500)' }} />
+                  {x}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// === Profile Screen ===
+
+function ProfileScreen() {
+  const [editing, setEditing] = React.useState(false);
+  const [nickname, setNickname] = React.useState(USER.name);
+  const [bio, setBio] = React.useState(USER.bio);
+
+  return (
+    <div style={{ padding: 32, maxWidth: 1000, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 22 }}>
+
+      <Card padding={28}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
+          <div style={{ position: 'relative' }}>
+            <div style={{
+              width: 92, height: 92, borderRadius: '50%',
+              background: 'linear-gradient(135deg, #a8d5b5, #3d8b5e)',
+              color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 36, fontFamily: 'var(--font-display)', fontWeight: 600,
+            }}>소</div>
+            {editing && (
+              <button style={{
+                position: 'absolute', bottom: -2, right: -2,
+                width: 30, height: 30, borderRadius: '50%',
+                background: '#fff', border: '1px solid var(--line-2)',
+                fontSize: 13,
+              }}>📷</button>
+            )}
+          </div>
+
+          <div style={{ flex: 1 }}>
+            {editing ? (
+              <>
+                <input value={nickname} onChange={e => setNickname(e.target.value)} style={{
+                  fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, color: 'var(--navy-700)',
+                  border: '0.5px solid var(--line-2)', borderRadius: 8, padding: '6px 10px', width: 280, marginBottom: 8,
+                }} />
+                <textarea value={bio} onChange={e => setBio(e.target.value)} style={{
+                  width: '100%', maxWidth: 480, minHeight: 50, padding: '8px 12px',
+                  border: '0.5px solid var(--line-2)', borderRadius: 8,
+                  fontSize: 13, color: 'var(--ink-2)', outline: 'none', resize: 'none',
+                  fontFamily: 'var(--font-body)',
+                }} />
+              </>
+            ) : (
+              <>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
+                  <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: 'var(--navy-700)' }}>{nickname}</h2>
+                  <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--ink-3)', fontSize: 13 }}>@{USER.handle}</span>
+                </div>
+                <div style={{ fontSize: 13, color: 'var(--ink-2)', marginTop: 6 }}>{bio}</div>
+                <div style={{ fontSize: 11, color: 'var(--ink-3)', fontFamily: 'var(--font-mono)', marginTop: 8 }}>
+                  {USER.joinedAt}부터 Rootin과 함께
+                </div>
+              </>
+            )}
+          </div>
+
+          <Btn variant={editing ? 'green' : 'secondary'} onClick={() => setEditing(!editing)}>
+            {editing ? '저장' : '프로필 수정'}
+          </Btn>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0, marginTop: 24, paddingTop: 22, borderTop: '0.5px solid var(--line-1)' }}>
+          {[
+            { label: '누적 TIL', value: USER.totalTil + '개' },
+            { label: '연속 기록', value: USER.streak + '일' },
+            { label: '수확한 식물', value: '5종' },
+            { label: '보유 포인트', value: USER.points + 'P' },
+          ].map((s, i) => (
+            <div key={i} style={{
+              borderRight: i < 3 ? '0.5px solid var(--line-1)' : 'none',
+              paddingLeft: i > 0 ? 22 : 0,
+            }}>
+              <div style={{ fontSize: 11, color: 'var(--ink-3)', fontFamily: 'var(--font-display)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{s.label}</div>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, color: 'var(--navy-700)', marginTop: 4 }}>{s.value}</div>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      {/* Account settings */}
+      <Card padding={24}>
+        <SectionHeader eyebrow="계정 관리" title="설정" />
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {[
+            { label: '이메일', value: USER.email, sub: '구글 계정 연동됨' },
+            { label: '비밀번호', value: '••••••••', action: '변경' },
+            { label: '연결된 SNS', value: '🟢 Google · 🟡 Kakao (예정)' },
+            { label: '알림', value: '데일리 리마인드 22:00', action: '설정' },
+            { label: '데이터 내보내기', value: 'JSON · Markdown', action: '내보내기' },
+          ].map((row, i, arr) => (
+            <div key={i} style={{
+              display: 'flex', alignItems: 'center', gap: 20,
+              padding: '14px 0',
+              borderBottom: i < arr.length - 1 ? '0.5px solid var(--line-1)' : 'none',
+            }}>
+              <div style={{ width: 140, fontSize: 12.5, color: 'var(--ink-3)' }}>{row.label}</div>
+              <div style={{ flex: 1, fontSize: 13.5, color: 'var(--ink-1)' }}>{row.value}</div>
+              {row.sub && <div style={{ fontSize: 11.5, color: 'var(--ink-3)' }}>{row.sub}</div>}
+              {row.action && <Btn variant="secondary" size="sm">{row.action}</Btn>}
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 4px' }}>
+        <button style={{ fontSize: 12.5, color: 'var(--ink-3)' }}>로그아웃</button>
+        <button style={{ fontSize: 12.5, color: '#b8536a' }}>회원 탈퇴</button>
+      </div>
+    </div>
+  );
+}
+
+// === Auth Screen ===
+
+function AuthScreen({ onAuth }) {
+  const [mode, setMode] = React.useState('login'); // login | signup
+  return (
+    <div style={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: '1.1fr 1fr', background: 'var(--paper)' }}>
+
+      {/* Left visual */}
+      <div style={{
+        background: 'linear-gradient(135deg, #1a3a5c 0%, #2a5a8c 60%, #3d8b5e 130%)',
+        color: '#fff',
+        padding: '60px 60px 40px',
+        display: 'flex', flexDirection: 'column',
+        position: 'relative', overflow: 'hidden',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, zIndex: 2 }}>
+          <RootinLogo size={40} />
+          <div>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 700, letterSpacing: '-0.02em' }}>Rootin</div>
+            <div style={{ fontSize: 11, color: '#a8d5b5', fontFamily: 'var(--font-display)', letterSpacing: '0.1em', marginTop: 2 }}>루틴처럼, 뿌리처럼</div>
+          </div>
+        </div>
+
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', zIndex: 2 }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: 38, fontWeight: 600, lineHeight: 1.3, letterSpacing: '-0.02em' }}>
+            매일의 기록이<br />
+            <span style={{ color: '#a8d5b5' }}>뿌리가 되어</span><br />
+            꽃을 피웁니다.
+          </div>
+          <div style={{ fontSize: 14, color: 'rgba(232, 245, 236, 0.7)', marginTop: 22, lineHeight: 1.7, maxWidth: 380 }}>
+            오늘 배운 한 줄을 화분에 심으면, 식물이 자랍니다.<br />
+            기록이 쌓일수록 정원도 깊어져요.
+          </div>
+        </div>
+
+        {/* decorative plant illustrations */}
+        <div style={{ position: 'absolute', bottom: 32, left: 60, right: 60, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', opacity: 0.95, zIndex: 1 }}>
+          {['seed','sprout','leaf','bloom','full'].map((s, i) => (
+            <div key={s} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+              <Plant stage={s} size={62} color="#ffd0e0" />
+              <div style={{ fontSize: 10, color: '#a8d5b5', fontFamily: 'var(--font-display)', letterSpacing: '0.06em' }}>{STAGE_META[s].label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* subtle bg pattern */}
+        <div style={{ position: 'absolute', inset: 0, opacity: 0.05, backgroundImage: 'radial-gradient(circle at 20% 80%, #fff 1px, transparent 1px), radial-gradient(circle at 80% 20%, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+      </div>
+
+      {/* Right form */}
+      <div style={{ padding: '60px 80px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <div className="eyebrow" style={{ color: 'var(--green-700)' }}>{mode === 'login' ? 'Welcome back' : 'Start growing'}</div>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 30, fontWeight: 700, color: 'var(--navy-700)', marginTop: 8, letterSpacing: '-0.02em' }}>
+          {mode === 'login' ? '다시 만나서 반가워요' : '새로운 정원 시작하기'}
+        </h1>
+        <div style={{ fontSize: 13.5, color: 'var(--ink-2)', marginTop: 8 }}>
+          {mode === 'login' ? '오늘의 한 줄을 기록할 시간이에요.' : '이메일만 있으면 바로 첫 화분을 받아요.'}
+        </div>
+
+        {/* Social */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 28 }}>
+          <button style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+            padding: '12px 16px', borderRadius: 10,
+            background: '#fff', border: '1px solid var(--line-2)',
+            fontSize: 13.5, fontWeight: 500, color: 'var(--ink-1)',
+          }}>
+            <svg width="18" height="18" viewBox="0 0 18 18">
+              <path d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84c-.21 1.13-.84 2.09-1.8 2.73v2.27h2.92c1.7-1.57 2.68-3.88 2.68-6.64z" fill="#4285F4"/>
+              <path d="M9 18c2.43 0 4.47-.81 5.96-2.18l-2.92-2.27c-.81.54-1.84.87-3.04.87-2.34 0-4.32-1.58-5.03-3.71H.96v2.33A8.99 8.99 0 0 0 9 18z" fill="#34A853"/>
+              <path d="M3.97 10.71A5.41 5.41 0 0 1 3.68 9c0-.6.1-1.18.29-1.71V4.96H.96A8.99 8.99 0 0 0 0 9c0 1.45.35 2.82.96 4.04l3.01-2.33z" fill="#FBBC05"/>
+              <path d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A8.99 8.99 0 0 0 .96 4.96L3.97 7.3C4.68 5.16 6.66 3.58 9 3.58z" fill="#EA4335"/>
+            </svg>
+            Google로 계속하기
+          </button>
+          <button style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+            padding: '12px 16px', borderRadius: 10,
+            background: '#fee500', border: 'none',
+            fontSize: 13.5, fontWeight: 500, color: '#191919',
+            opacity: 0.6, cursor: 'not-allowed',
+          }}>
+            💬 Kakao로 계속하기 <span style={{ fontSize: 10.5, color: '#666', marginLeft: 4 }}>(예정)</span>
+          </button>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '24px 0', color: 'var(--ink-3)', fontSize: 11, fontFamily: 'var(--font-display)' }}>
+          <div style={{ flex: 1, height: 0.5, background: 'var(--line-2)' }} />
+          <span>또는 이메일로</span>
+          <div style={{ flex: 1, height: 0.5, background: 'var(--line-2)' }} />
+        </div>
+
+        {/* Form */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {mode === 'signup' && (
+            <div>
+              <label style={{ fontSize: 11.5, color: 'var(--ink-3)', fontFamily: 'var(--font-display)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>닉네임</label>
+              <input placeholder="정원에서 불릴 이름" style={{
+                width: '100%', padding: '12px 14px', marginTop: 6,
+                borderRadius: 10, border: '0.5px solid var(--line-2)',
+                fontSize: 14, outline: 'none', background: '#fff',
+              }} />
+            </div>
+          )}
+          <div>
+            <label style={{ fontSize: 11.5, color: 'var(--ink-3)', fontFamily: 'var(--font-display)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>이메일</label>
+            <input placeholder="you@example.com" defaultValue="soyeon@rootin.app" style={{
+              width: '100%', padding: '12px 14px', marginTop: 6,
+              borderRadius: 10, border: '0.5px solid var(--line-2)',
+              fontSize: 14, outline: 'none', background: '#fff',
+            }} />
+            {mode === 'signup' && <div style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 4 }}>해당 이메일로 인증메일을 전송합니다.</div>}
+          </div>
+          <div>
+            <label style={{ fontSize: 11.5, color: 'var(--ink-3)', fontFamily: 'var(--font-display)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>비밀번호</label>
+            <input type="password" placeholder="••••••••" defaultValue="rootinrootin" style={{
+              width: '100%', padding: '12px 14px', marginTop: 6,
+              borderRadius: 10, border: '0.5px solid var(--line-2)',
+              fontSize: 14, outline: 'none', background: '#fff',
+            }} />
+          </div>
+        </div>
+
+        <Btn variant="primary" size="lg" style={{ width: '100%', marginTop: 22 }} onClick={onAuth}>
+          {mode === 'login' ? '정원으로 들어가기' : '첫 화분 받기'} →
+        </Btn>
+
+        <div style={{ textAlign: 'center', marginTop: 18, fontSize: 12.5, color: 'var(--ink-3)' }}>
+          {mode === 'login' ? '아직 계정이 없으세요? ' : '이미 계정이 있으세요? '}
+          <button onClick={() => setMode(mode === 'login' ? 'signup' : 'login')} style={{ color: 'var(--green-700)', fontWeight: 500 }}>
+            {mode === 'login' ? '회원가입' : '로그인'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { CollectionScreen, AIScreen, ProfileScreen, AuthScreen });
