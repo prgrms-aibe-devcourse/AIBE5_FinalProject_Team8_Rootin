@@ -1,3 +1,9 @@
+import { useState, useEffect, useRef } from 'react';
+import { POTS, GARDEN_THEMES, DEFAULT_GARDEN_LAYOUT, DEX, USER, TILS } from './data.jsx';
+import { Icon, Pill, Btn, Card, SectionHeader, ProgressBar } from './ui.jsx';
+import { PixelPlant, PIXEL_SPECIES } from './pixel-plants.jsx';
+import { tilCountToStage, STAGE_META } from './plants.jsx';
+
 // Garden + Pot Detail screens — pixel-art edition with 정원 꾸미기 mode
 
 // ============================
@@ -81,12 +87,12 @@ function PixelGround({ color = '#a8d5b5', shade = '#7cb893', length = 32 }) {
 // Garden Scene — themed background with pixel plants
 // ============================
 function GardenScene({ pots, theme, layout, editMode, onMovePot, onOpenPot, dense = false, decorations = [], onMoveDecoration, onRemoveDecoration, hiddenPots = {}, onHidePot }) {
-  const sceneRef = React.useRef(null);
-  const [dragging, setDragging] = React.useState(null);
-  const dragOffsetRef = React.useRef({ dx: 0, dy: 0 });
+  const sceneRef = useRef(null);
+  const [dragging, setDragging] = useState(null);
+  const dragOffsetRef = useRef({ dx: 0, dy: 0 });
 
   // Pointer handlers for dragging pots
-  React.useEffect(() => {
+  useEffect(() => {
     if (!dragging) return;
     const onMove = (e) => {
       const rect = sceneRef.current.getBoundingClientRect();
@@ -364,11 +370,11 @@ function GardenScene({ pots, theme, layout, editMode, onMovePot, onOpenPot, dens
 // Garden Screen
 // ============================
 function GardenScreen({ onOpenPot }) {
-  const [editMode, setEditMode] = React.useState(false);
-  const [themeId, setThemeId] = React.useState('meadow');
-  const [layout, setLayout] = React.useState(DEFAULT_GARDEN_LAYOUT);
-  const [decorations, setDecorations] = React.useState([]);
-  const [hiddenPots, setHiddenPots] = React.useState({}); // { potId: true }
+  const [editMode, setEditMode] = useState(false);
+  const [themeId, setThemeId] = useState('meadow');
+  const [layout, setLayout] = useState(DEFAULT_GARDEN_LAYOUT);
+  const [decorations, setDecorations] = useState([]);
+  const [hiddenPots, setHiddenPots] = useState({}); // { potId: true }
 
   const theme = GARDEN_THEMES.find(t => t.id === themeId);
   const movePot = (id, x, y) => setLayout(L => ({ ...L, [id]: { x, y } }));
@@ -635,7 +641,7 @@ function GardenScreen({ onOpenPot }) {
 // ============================
 function PotDetailScreen({ potId, onBack }) {
   const pot = POTS.find(p => p.id === potId);
-  const [showHarvest, setShowHarvest] = React.useState(false);
+  const [showHarvest, setShowHarvest] = useState(false);
   if (!pot) return null;
   const stage = tilCountToStage(pot.tilCount);
   const stageMeta = STAGE_META[stage];
@@ -827,4 +833,4 @@ function HarvestModal({ pot, onClose }) {
   );
 }
 
-Object.assign(window, { GardenScreen, PotDetailScreen, GardenScene });
+export { GardenScreen, PotDetailScreen, GardenScene };

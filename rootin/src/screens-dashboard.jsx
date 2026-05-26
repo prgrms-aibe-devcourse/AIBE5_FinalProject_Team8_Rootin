@@ -1,3 +1,7 @@
+import { USER, POTS, GRASS, WEEKLY, TODAY_GOALS } from './data.jsx';
+import { Card, Pill, Btn, StatTile, SectionHeader, ProgressBar, Icon } from './ui.jsx';
+import { Plant } from './plants.jsx';
+
 // Dashboard — 잔디그래프, 통계, 오늘의 목표
 
 function GrassGraph({ data }) {
@@ -314,4 +318,4 @@ function DashboardScreen({ onNav }) {
   );
 }
 
-Object.assign(window, { DashboardScreen, GrassGraph });
+export { DashboardScreen, GrassGraph };
