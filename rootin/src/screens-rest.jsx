@@ -1,3 +1,9 @@
+import { useState } from 'react';
+import { DEX, TILS, POTS, USER } from './data.jsx';
+import { Icon, Pill, Btn, Card, SectionHeader } from './ui.jsx';
+import { PixelPlant, PIXEL_SPECIES } from './pixel-plants.jsx';
+import { Plant, STAGE_META } from './plants.jsx';
+
 // Collection (식물도감), AI, Profile, Auth screens
 
 // ============================
@@ -229,9 +235,9 @@ function CollectionScreen() {
 // === AI Screen ===
 
 function AIScreen() {
-  const [mode, setMode] = React.useState('quiz'); // quiz | summary
-  const [selected, setSelected] = React.useState(['t1', 't4', 't6']);
-  const [generating, setGenerating] = React.useState(false);
+  const [mode, setMode] = useState('quiz'); // quiz | summary
+  const [selected, setSelected] = useState(['t1', 't4', 't6']);
+  const [generating, setGenerating] = useState(false);
 
   const toggle = (id) => setSelected(selected.includes(id) ? selected.filter(x => x !== id) : [...selected, id]);
 
@@ -456,9 +462,9 @@ function SummaryResult() {
 // === Profile Screen ===
 
 function ProfileScreen() {
-  const [editing, setEditing] = React.useState(false);
-  const [nickname, setNickname] = React.useState(USER.name);
-  const [bio, setBio] = React.useState(USER.bio);
+  const [editing, setEditing] = useState(false);
+  const [nickname, setNickname] = useState(USER.name);
+  const [bio, setBio] = useState(USER.bio);
 
   return (
     <div style={{ padding: 32, maxWidth: 1000, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 22 }}>
@@ -569,7 +575,7 @@ function ProfileScreen() {
 // === Auth Screen ===
 
 function AuthScreen({ onAuth }) {
-  const [mode, setMode] = React.useState('login'); // login | signup
+  const [mode, setMode] = useState('login'); // login | signup
   return (
     <div style={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: '1.1fr 1fr', background: 'var(--paper)' }}>
 
@@ -704,4 +710,4 @@ function AuthScreen({ onAuth }) {
   );
 }
 
-Object.assign(window, { CollectionScreen, AIScreen, ProfileScreen, AuthScreen });
+export { CollectionScreen, AIScreen, ProfileScreen, AuthScreen };
