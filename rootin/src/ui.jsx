@@ -25,9 +25,9 @@ function Pill({ children, tone = 'default' }) {
 
 function Btn({ children, variant = 'primary', size = 'md', icon, onClick, style, ...rest }) {
   const variants = {
-    primary: { bg: 'var(--navy-700)', color: '#fff', border: 'var(--navy-700)' },
-    secondary: { bg: '#fff', color: 'var(--navy-700)', border: 'var(--line-2)' },
-    green: { bg: 'var(--green-500)', color: '#fff', border: 'var(--green-500)' },
+    primary: { bg: 'var(--ink)', color: '#fff', border: 'var(--ink)' },
+    secondary: { bg: '#fff', color: 'var(--ink)', border: 'var(--rule-2)' },
+    green: { bg: 'var(--moss)', color: '#fff', border: 'var(--moss)' },
     ghost: { bg: 'transparent', color: 'var(--ink-2)', border: 'transparent' },
     danger: { bg: '#fff', color: '#b8536a', border: '#f0c4cc' },
   };
@@ -58,8 +58,8 @@ function Btn({ children, variant = 'primary', size = 'md', icon, onClick, style,
 function Card({ children, style, padding = 20, hoverable = false, onClick }) {
   return (
     <div onClick={onClick} style={{
-      background: 'var(--bg-card)',
-      border: '0.5px solid var(--line-1)',
+      background: 'var(--card)',
+      border: '0.5px solid var(--rule)',
       borderRadius: 'var(--r-lg)',
       padding,
       transition: 'transform 120ms ease, box-shadow 120ms ease',
@@ -78,14 +78,14 @@ function SectionHeader({ eyebrow, title, action }) {
     <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 16 }}>
       <div>
         {eyebrow && <div className="eyebrow" style={{ marginBottom: 4 }}>{eyebrow}</div>}
-        <h2 style={{ fontSize: 20, fontWeight: 600, color: 'var(--ink-1)', letterSpacing: '-0.01em' }}>{title}</h2>
+        <h2 style={{ fontSize: 20, fontWeight: 600, color: 'var(--ink)', letterSpacing: '-0.01em' }}>{title}</h2>
       </div>
       {action}
     </div>
   );
 }
 
-function ProgressBar({ value, color = 'var(--green-500)', height = 6, bg = '#eef2ee' }) {
+function ProgressBar({ value, color = 'var(--moss)', height = 6, bg = '#eef2ee' }) {
   return (
     <div style={{ height, background: bg, borderRadius: 999, overflow: 'hidden' }}>
       <div style={{
@@ -98,7 +98,7 @@ function ProgressBar({ value, color = 'var(--green-500)', height = 6, bg = '#eef
 }
 
 function StatTile({ label, value, suffix, sub, tone = 'navy' }) {
-  const toneColor = { navy: 'var(--navy-700)', green: 'var(--green-500)', brown: 'var(--brown-700)' }[tone];
+  const toneColor = { navy: 'var(--ink)', green: 'var(--moss)', brown: 'var(--amber)' }[tone];
   return (
     <Card padding={18}>
       <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--ink-3)', fontFamily: 'var(--font-display)' }}>{label}</div>
