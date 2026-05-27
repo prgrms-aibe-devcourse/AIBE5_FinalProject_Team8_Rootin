@@ -12,17 +12,15 @@ RUN npm ci
 # 소스 복사 후 빌드
 COPY . .
 RUN npm run build
-# CRA 사용 시 결과물: /app/build
 # Vite 사용 시 결과물: /app/dist
-# → 아래 COPY 경로를 본인 프로젝트에 맞게 수정
-
 # ─────────────────────────────────────────
 # Stage 2: Nginx로 정적파일 서빙
 # ─────────────────────────────────────────
 FROM nginx:alpine
 
 # 기본 nginx 설정 제거
-RUN rm /etc/nginx/conf.d/default.conf
+RUN rm /etc/nginx/conf.d/default.conf \
+    && apk add --no-cache curl
 
 # FE 전용 nginx 설정 복사
 COPY nginx.conf /etc/nginx/conf.d/default.conf
@@ -33,7 +31,7 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 EXPOSE 80
 
 HEALTHCHECK --interval=10s --timeout=3s --retries=3 \
-  CMD wget -qO- http://localhost/index.html || exit 1
+  CMD curl -f http://localhost/index.html || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]
 
