@@ -336,10 +336,8 @@ function AIScreen() {
     }, 800);
   };
 
-  // 화분 or 모드가 바뀌면 결과 초기화
   const handlePotChange = (id) => {
     setPotId(id);
-    setGenerated(false);
   };
 
   const [saved, setSaved] = useState(false); // 저장 완료 피드백용
@@ -370,7 +368,7 @@ function AIScreen() {
         <Card padding={18} style={{ marginBottom: 16 }}>
           <div className="eyebrow" style={{ marginBottom: 8 }}>목적</div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button onClick={() => { setMode('quiz'); setGenerated(false); }} style={{
+            <button onClick={() => setMode('quiz')} style={{
               flex: 1, padding: '12px 10px', borderRadius: 10,
               background: mode === 'quiz' ? 'var(--ink)' : '#fff',
               color: mode === 'quiz' ? '#fff' : 'var(--ink-2)',
@@ -380,7 +378,7 @@ function AIScreen() {
               <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, marginBottom: 4 }}>📝 복습 문제 생성</div>
               <div style={{ fontSize: 10.5, opacity: 0.7, lineHeight: 1.5 }}>TIL에서 {quizCount}문제 자동 생성</div>
             </button>
-            <button onClick={() => { setMode('summary'); setGenerated(false); }} style={{
+            <button onClick={() => setMode('summary')} style={{
               flex: 1, padding: '12px 10px', borderRadius: 10,
               background: mode === 'summary' ? 'var(--ink)' : '#fff',
               color: mode === 'summary' ? '#fff' : 'var(--ink-2)',
