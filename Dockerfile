@@ -28,9 +28,7 @@ RUN rm /etc/nginx/conf.d/default.conf
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # 빌드 결과물 복사
-COPY --from=builder /app/build /usr/share/nginx/html
-# Vite 사용 시 위 줄을 아래로 교체:
-# COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder /app/dist /usr/share/nginx/html
 
 EXPOSE 80
 
