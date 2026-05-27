@@ -26,8 +26,8 @@ jobs:
       - name: Build & Push FE image
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: ./Dockerfile
+          context: ./rootin
+          file: ./rootin/Dockerfile
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/rootin-fe:latest
