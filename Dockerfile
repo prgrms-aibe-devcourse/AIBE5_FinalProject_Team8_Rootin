@@ -38,3 +38,4 @@ HEALTHCHECK --interval=10s --timeout=3s --retries=3 \
   CMD wget -qO- http://localhost/index.html || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]
+
