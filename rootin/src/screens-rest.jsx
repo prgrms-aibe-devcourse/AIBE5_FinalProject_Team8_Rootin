@@ -47,7 +47,7 @@ function EvoCard({ entry }) {
               }}>
                 {i === 0 ? <PixelPlant species="secret" stage="seed" size={42} locked /> : null}
               </div>
-              <div style={{ fontSize: 10, color: 'var(--ink-4)' }}>???</div>
+              <div style={{ fontSize: 10, color: 'var(--ink-3)' }}>???</div>
             </div>
           ))}
         </div>
@@ -65,7 +65,7 @@ function EvoCard({ entry }) {
     );
   }
 
-  const borderColor = isRare ? '#ccc9f0' : 'var(--line-1)';
+  const borderColor = isRare ? '#ccc9f0' : 'var(--rule)';
 
   return (
     <div style={{
@@ -77,7 +77,7 @@ function EvoCard({ entry }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <span style={{ fontSize: 11, color: 'var(--ink-3)', fontFamily: 'var(--font-mono)', whiteSpace: 'nowrap' }}>#{entry.no}</span>
-          <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--navy-700)', fontFamily: 'var(--font-display)', whiteSpace: 'nowrap' }}>{entry.label}</span>
+          <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)', fontFamily: 'var(--font-display)', whiteSpace: 'nowrap' }}>{entry.label}</span>
           {entry.pot && (
             <span style={{ fontSize: 12, color: 'var(--ink-3)', whiteSpace: 'nowrap' }}>
               · {entry.pot.emoji} {entry.pot.name} 화분 {entry.pot.round}회차
@@ -101,7 +101,7 @@ function EvoCard({ entry }) {
           const date = entry.levels[stageOrder[i]];
           const stageName = speciesInfo?.stages[s]?.name || stageOrder[i];
 
-          let bg = '#f7f9f7', border = '0.5px solid var(--line-1)';
+          let bg = '#f7f9f7', border = '0.5px solid var(--rule)';
           if (passed) {
             bg = isRare ? '#eef2fa' : (isHarvested ? '#e6f1fb' : '#eaf3de');
             border = isRare ? '0.5px solid #afa9ec' : (isHarvested ? '0.5px solid #185fa5' : '0.5px solid #c8e0a8');
@@ -116,7 +116,7 @@ function EvoCard({ entry }) {
               {i < 4 && (
                 <div style={{
                   position: 'absolute', right: -6, top: 22,
-                  fontSize: 14, color: 'var(--ink-4)', zIndex: 1,
+                  fontSize: 14, color: 'var(--ink-3)', zIndex: 1,
                 }}>›</div>
               )}
               <div style={{
@@ -126,7 +126,7 @@ function EvoCard({ entry }) {
               }}>
                 <PixelPlant species={entry.species} stage={s} size={42} locked={!passed} />
               </div>
-              <div style={{ fontSize: 10, color: passed ? 'var(--ink-1)' : 'var(--ink-4)', fontWeight: passed ? 500 : 400 }}>
+              <div style={{ fontSize: 10, color: passed ? 'var(--ink)' : 'var(--ink-3)', fontWeight: passed ? 500 : 400 }}>
                 {stageName}
               </div>
               {date && (
@@ -134,7 +134,7 @@ function EvoCard({ entry }) {
                   {date}
                 </div>
               )}
-              <div style={{ fontSize: 9, color: 'var(--ink-4)' }}>
+              <div style={{ fontSize: 9, color: 'var(--ink-3)' }}>
                 {stageOrder[i]} {isCurrent && '←'}
               </div>
             </div>
@@ -143,13 +143,13 @@ function EvoCard({ entry }) {
       </div>
 
       {/* footer */}
-      <div style={{ display: 'flex', gap: 18, marginTop: 12, paddingTop: 10, borderTop: '0.5px solid var(--line-1)', fontSize: 11, color: 'var(--ink-3)' }}>
+      <div style={{ display: 'flex', gap: 18, marginTop: 12, paddingTop: 10, borderTop: '0.5px solid var(--rule)', fontSize: 11, color: 'var(--ink-3)' }}>
         {!isHarvested && (
-          <span>현재 단계 <b style={{ color: 'var(--ink-1)' }}>{speciesInfo?.stages[entry.currentStage]?.stage} ({reachedIdx + 1}/5)</b></span>
+          <span>현재 단계 <b style={{ color: 'var(--ink)' }}>{speciesInfo?.stages[entry.currentStage]?.stage} ({reachedIdx + 1}/5)</b></span>
         )}
-        <span>화분 레벨 <b style={{ color: 'var(--ink-1)' }}>Lv.{entry.potLevel}</b></span>
-        <span>시작일 <b style={{ color: 'var(--ink-1)' }}>{entry.startedAt}</b></span>
-        {isHarvested && <span>수확일 <b style={{ color: 'var(--ink-1)' }}>{entry.harvestedAt}</b></span>}
+        <span>화분 레벨 <b style={{ color: 'var(--ink)' }}>Lv.{entry.potLevel}</b></span>
+        <span>시작일 <b style={{ color: 'var(--ink)' }}>{entry.startedAt}</b></span>
+        {isHarvested && <span>수확일 <b style={{ color: 'var(--ink)' }}>{entry.harvestedAt}</b></span>}
       </div>
     </div>
   );
@@ -168,8 +168,8 @@ function CollectionScreen() {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, gap: 16, flexWrap: 'wrap' }}>
         <div style={{ flex: '1 1 320px' }}>
-          <div className="eyebrow" style={{ color: 'var(--green-700)' }}>식물 도감</div>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 700, color: 'var(--navy-700)', marginTop: 6, letterSpacing: '-0.02em' }}>
+          <div className="eyebrow" style={{ color: 'var(--moss-2)' }}>식물 도감</div>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 700, color: 'var(--ink)', marginTop: 6, letterSpacing: '-0.02em' }}>
             직접 키워낸 식물의 진화 기록
           </h2>
           <div style={{ fontSize: 13, color: 'var(--ink-2)', marginTop: 6 }}>
@@ -179,21 +179,21 @@ function CollectionScreen() {
 
         <div style={{ display: 'flex', gap: 8 }}>
           <div style={{
-            background: '#fff', border: '0.5px solid var(--line-1)', borderRadius: 10,
+            background: '#fff', border: '0.5px solid var(--rule)', borderRadius: 10,
             padding: '10px 18px', textAlign: 'center', minWidth: 80,
           }}>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, color: 'var(--navy-700)' }}>{growing.length}</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, color: 'var(--ink)' }}>{growing.length}</div>
             <div style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 2 }}>키우는 중</div>
           </div>
           <div style={{
-            background: '#fff', border: '0.5px solid var(--line-1)', borderRadius: 10,
+            background: '#fff', border: '0.5px solid var(--rule)', borderRadius: 10,
             padding: '10px 18px', textAlign: 'center', minWidth: 80,
           }}>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, color: 'var(--navy-700)' }}>{harvested.length}</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, color: 'var(--ink)' }}>{harvested.length}</div>
             <div style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 2 }}>수확 완료</div>
           </div>
           <div style={{
-            background: '#fff', border: '0.5px solid var(--line-1)', borderRadius: 10,
+            background: '#fff', border: '0.5px solid var(--rule)', borderRadius: 10,
             padding: '10px 18px', textAlign: 'center', minWidth: 80,
           }}>
             <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, color: '#3b6d11' }}>{unlocked} / {total}</div>
@@ -253,9 +253,9 @@ function AIScreen() {
           <div style={{ display: 'flex', gap: 8 }}>
             <button onClick={() => setMode('quiz')} style={{
               flex: 1, padding: '12px 10px', borderRadius: 10,
-              background: mode === 'quiz' ? 'var(--navy-700)' : '#fff',
+              background: mode === 'quiz' ? 'var(--ink)' : '#fff',
               color: mode === 'quiz' ? '#fff' : 'var(--ink-2)',
-              border: '0.5px solid ' + (mode === 'quiz' ? 'var(--navy-700)' : 'var(--line-2)'),
+              border: '0.5px solid ' + (mode === 'quiz' ? 'var(--ink)' : 'var(--rule-2)'),
               fontSize: 12.5, fontWeight: 500, textAlign: 'left',
             }}>
               <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, marginBottom: 4 }}>📝 복습 문제 생성</div>
@@ -263,9 +263,9 @@ function AIScreen() {
             </button>
             <button onClick={() => setMode('summary')} style={{
               flex: 1, padding: '12px 10px', borderRadius: 10,
-              background: mode === 'summary' ? 'var(--navy-700)' : '#fff',
+              background: mode === 'summary' ? 'var(--ink)' : '#fff',
               color: mode === 'summary' ? '#fff' : 'var(--ink-2)',
-              border: '0.5px solid ' + (mode === 'summary' ? 'var(--navy-700)' : 'var(--line-2)'),
+              border: '0.5px solid ' + (mode === 'summary' ? 'var(--ink)' : 'var(--rule-2)'),
               fontSize: 12.5, fontWeight: 500, textAlign: 'left',
             }}>
               <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, marginBottom: 4 }}>✨ TIL 요약</div>
@@ -277,7 +277,7 @@ function AIScreen() {
         <Card padding={18}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
             <div className="eyebrow">학습할 TIL · {selected.length}개 선택</div>
-            <button style={{ fontSize: 11, color: 'var(--green-700)', fontFamily: 'var(--font-display)', fontWeight: 500 }}>전체 선택</button>
+            <button style={{ fontSize: 11, color: 'var(--moss-2)', fontFamily: 'var(--font-display)', fontWeight: 500 }}>전체 선택</button>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 420, overflow: 'auto', paddingRight: 4 }} className="scrollbar">
             {TILS.map(t => {
@@ -287,20 +287,20 @@ function AIScreen() {
                 <button key={t.id} onClick={() => toggle(t.id)} style={{
                   display: 'flex', alignItems: 'flex-start', gap: 10,
                   padding: '10px 12px', borderRadius: 9,
-                  background: checked ? 'var(--green-50)' : '#fff',
-                  border: '0.5px solid ' + (checked ? 'var(--green-200)' : 'var(--line-1)'),
+                  background: checked ? 'var(--paper-2)' : '#fff',
+                  border: '0.5px solid ' + (checked ? 'var(--leaf)' : 'var(--rule)'),
                   textAlign: 'left',
                 }}>
                   <div style={{
                     width: 18, height: 18, borderRadius: 5,
-                    background: checked ? 'var(--green-500)' : '#fff',
-                    border: checked ? 'none' : '1px solid var(--line-2)',
+                    background: checked ? 'var(--moss)' : '#fff',
+                    border: checked ? 'none' : '1px solid var(--rule-2)',
                     color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
                     marginTop: 2, flexShrink: 0,
                   }}>{checked && Icon.check}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 11, color: 'var(--ink-3)', fontFamily: 'var(--font-mono)' }}>{pot.emoji} {pot.name} · {t.date}</div>
-                    <div style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--ink-1)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.title}</div>
+                    <div style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--ink)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.title}</div>
                   </div>
                 </button>
               );
@@ -311,7 +311,7 @@ function AIScreen() {
             {mode === 'quiz' ? '🌱 복습 문제 만들기' : '✨ 요약 생성하기'} · 80 토큰 사용
           </Btn>
           <div style={{ marginTop: 8, fontSize: 11, color: 'var(--ink-3)', textAlign: 'center' }}>
-            현재 보유: <b style={{ color: 'var(--navy-700)' }}>{USER.points}P</b> · 포인트는 활동으로 적립돼요
+            현재 보유: <b style={{ color: 'var(--ink)' }}>{USER.points}P</b> · 포인트는 활동으로 적립돼요
           </div>
         </Card>
       </div>
@@ -360,8 +360,8 @@ function QuizResult() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
       <div style={{
-        padding: 16, background: 'var(--bg-soft)', borderRadius: 10,
-        fontSize: 12.5, color: 'var(--ink-2)', borderLeft: '2px solid var(--green-500)',
+        padding: 16, background: 'var(--paper-2)', borderRadius: 10,
+        fontSize: 12.5, color: 'var(--ink-2)', borderLeft: '2px solid var(--moss)',
       }}>
         💡 선택한 3개의 TIL에서 핵심 개념 5문항을 추출했어요. 답을 적고 저장하면 학습 기록에 남아요.
       </div>
@@ -369,8 +369,8 @@ function QuizResult() {
       {quiz.map((q, i) => (
         <div key={i}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
-            <span style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: 'var(--green-700)' }}>0{i + 1}</span>
-            <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--ink-1)', lineHeight: 1.6, flex: 1 }}>{q.q}</span>
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: 'var(--moss-2)' }}>0{i + 1}</span>
+            <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--ink)', lineHeight: 1.6, flex: 1 }}>{q.q}</span>
           </div>
           <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8, paddingLeft: 28 }}>
             {q.choices.map((c, ci) => {
@@ -380,20 +380,20 @@ function QuizResult() {
                 <div key={ci} style={{
                   display: 'flex', alignItems: 'center', gap: 10,
                   padding: '10px 14px', borderRadius: 9,
-                  background: isMine ? (isAns ? 'var(--green-50)' : '#fff') : '#fff',
-                  border: '0.5px solid ' + (isMine && isAns ? 'var(--green-500)' : 'var(--line-1)'),
-                  fontSize: 13, color: 'var(--ink-1)',
+                  background: isMine ? (isAns ? 'var(--paper-2)' : '#fff') : '#fff',
+                  border: '0.5px solid ' + (isMine && isAns ? 'var(--moss)' : 'var(--rule)'),
+                  fontSize: 13, color: 'var(--ink)',
                 }}>
                   <div style={{
                     width: 18, height: 18, borderRadius: '50%',
-                    background: isMine ? 'var(--green-500)' : '#fff',
-                    border: '1px solid ' + (isMine ? 'var(--green-500)' : 'var(--line-2)'),
+                    background: isMine ? 'var(--moss)' : '#fff',
+                    border: '1px solid ' + (isMine ? 'var(--moss)' : 'var(--rule-2)'),
                     display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                   }}>
                     {isMine && <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#fff' }} />}
                   </div>
                   <span>{c}</span>
-                  {isMine && isAns && <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--green-700)', fontFamily: 'var(--font-display)', fontWeight: 600 }}>✓ 정답</span>}
+                  {isMine && isAns && <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--moss-2)', fontFamily: 'var(--font-display)', fontWeight: 600 }}>✓ 정답</span>}
                 </div>
               );
             })}
@@ -405,8 +405,8 @@ function QuizResult() {
             <textarea placeholder="내 답변 / 메모를 작성하세요" style={{
               width: '100%', minHeight: 48,
               padding: '10px 12px', borderRadius: 8,
-              border: '0.5px solid var(--line-1)',
-              fontSize: 12.5, color: 'var(--ink-1)',
+              border: '0.5px solid var(--rule)',
+              fontSize: 12.5, color: 'var(--ink)',
               outline: 'none', resize: 'vertical',
               background: '#fcfdfb',
             }} />
@@ -421,19 +421,19 @@ function SummaryResult() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
       <div style={{
-        padding: 16, background: 'var(--bg-soft)', borderRadius: 10,
-        fontSize: 12.5, color: 'var(--ink-2)', borderLeft: '2px solid var(--green-500)',
+        padding: 16, background: 'var(--paper-2)', borderRadius: 10,
+        fontSize: 12.5, color: 'var(--ink-2)', borderLeft: '2px solid var(--moss)',
       }}>
         🌿 선택한 3개 TIL의 핵심을 한 문서로 묶었어요.
       </div>
       <div>
-        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: 'var(--navy-700)', marginBottom: 8 }}>
+        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: 'var(--ink)', marginBottom: 8 }}>
           이번 주, 프론트엔드 레이아웃의 진화
         </h3>
-        <div style={{ fontSize: 13.5, color: 'var(--ink-1)', lineHeight: 1.85 }}>
+        <div style={{ fontSize: 13.5, color: 'var(--ink)', lineHeight: 1.85 }}>
           이번 주의 키워드는 <b>"컨테이너 단위"</b>와 <b>"경계의 명확화"</b>다. CSS Container Queries는 미디어쿼리가 가진 "페이지 폭"이라는 한계를 넘어, 컴포넌트가 자신이 놓인 부모 박스에 반응하도록 만든다. 이는 디자인 시스템과 자연스럽게 맞닿는다.
           <br /><br />
-          비슷한 맥락에서, React Server Component는 클라이언트와 서버의 경계를 <code style={{ fontFamily: 'var(--font-mono)', background: 'var(--bg-soft)', padding: '1px 6px', borderRadius: 4 }}>"use client"</code> 지시어로 명확하게 가른다. 둘 다 "이 컴포넌트가 어디에서, 무엇에 의존해 동작하는가"를 코드로 드러내는 흐름이다.
+          비슷한 맥락에서, React Server Component는 클라이언트와 서버의 경계를 <code style={{ fontFamily: 'var(--font-mono)', background: 'var(--paper-2)', padding: '1px 6px', borderRadius: 4 }}>"use client"</code> 지시어로 명확하게 가른다. 둘 다 "이 컴포넌트가 어디에서, 무엇에 의존해 동작하는가"를 코드로 드러내는 흐름이다.
         </div>
       </div>
 
@@ -442,12 +442,12 @@ function SummaryResult() {
           { title: '핵심 개념', items: ['Container Queries', 'use client / use server', 'B-tree / GIN 인덱스'] },
           { title: '다음 학습 추천', items: ['CSS Subgrid 정리', 'RSC + Suspense 흐름', 'GIN 인덱스 실전 쿼리'] },
         ].map((s, i) => (
-          <div key={i} style={{ padding: 16, borderRadius: 10, background: 'var(--bg-soft)' }}>
+          <div key={i} style={{ padding: 16, borderRadius: 10, background: 'var(--paper-2)' }}>
             <div className="eyebrow" style={{ marginBottom: 8 }}>{s.title}</div>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
               {s.items.map((x, j) => (
-                <li key={j} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, color: 'var(--ink-1)' }}>
-                  <span style={{ width: 4, height: 4, borderRadius: 2, background: 'var(--green-500)' }} />
+                <li key={j} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, color: 'var(--ink)' }}>
+                  <span style={{ width: 4, height: 4, borderRadius: 2, background: 'var(--moss)' }} />
                   {x}
                 </li>
               ))}
@@ -482,7 +482,7 @@ function ProfileScreen() {
               <button style={{
                 position: 'absolute', bottom: -2, right: -2,
                 width: 30, height: 30, borderRadius: '50%',
-                background: '#fff', border: '1px solid var(--line-2)',
+                background: '#fff', border: '1px solid var(--rule-2)',
                 fontSize: 13,
               }}>📷</button>
             )}
@@ -492,12 +492,12 @@ function ProfileScreen() {
             {editing ? (
               <>
                 <input value={nickname} onChange={e => setNickname(e.target.value)} style={{
-                  fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, color: 'var(--navy-700)',
-                  border: '0.5px solid var(--line-2)', borderRadius: 8, padding: '6px 10px', width: 280, marginBottom: 8,
+                  fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, color: 'var(--ink)',
+                  border: '0.5px solid var(--rule-2)', borderRadius: 8, padding: '6px 10px', width: 280, marginBottom: 8,
                 }} />
                 <textarea value={bio} onChange={e => setBio(e.target.value)} style={{
                   width: '100%', maxWidth: 480, minHeight: 50, padding: '8px 12px',
-                  border: '0.5px solid var(--line-2)', borderRadius: 8,
+                  border: '0.5px solid var(--rule-2)', borderRadius: 8,
                   fontSize: 13, color: 'var(--ink-2)', outline: 'none', resize: 'none',
                   fontFamily: 'var(--font-body)',
                 }} />
@@ -505,7 +505,7 @@ function ProfileScreen() {
             ) : (
               <>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
-                  <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: 'var(--navy-700)' }}>{nickname}</h2>
+                  <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: 'var(--ink)' }}>{nickname}</h2>
                   <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--ink-3)', fontSize: 13 }}>@{USER.handle}</span>
                 </div>
                 <div style={{ fontSize: 13, color: 'var(--ink-2)', marginTop: 6 }}>{bio}</div>
@@ -521,7 +521,7 @@ function ProfileScreen() {
           </Btn>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0, marginTop: 24, paddingTop: 22, borderTop: '0.5px solid var(--line-1)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0, marginTop: 24, paddingTop: 22, borderTop: '0.5px solid var(--rule)' }}>
           {[
             { label: '누적 TIL', value: USER.totalTil + '개' },
             { label: '연속 기록', value: USER.streak + '일' },
@@ -529,11 +529,11 @@ function ProfileScreen() {
             { label: '보유 포인트', value: USER.points + 'P' },
           ].map((s, i) => (
             <div key={i} style={{
-              borderRight: i < 3 ? '0.5px solid var(--line-1)' : 'none',
+              borderRight: i < 3 ? '0.5px solid var(--rule)' : 'none',
               paddingLeft: i > 0 ? 22 : 0,
             }}>
               <div style={{ fontSize: 11, color: 'var(--ink-3)', fontFamily: 'var(--font-display)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{s.label}</div>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, color: 'var(--navy-700)', marginTop: 4 }}>{s.value}</div>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, color: 'var(--ink)', marginTop: 4 }}>{s.value}</div>
             </div>
           ))}
         </div>
@@ -553,10 +553,10 @@ function ProfileScreen() {
             <div key={i} style={{
               display: 'flex', alignItems: 'center', gap: 20,
               padding: '14px 0',
-              borderBottom: i < arr.length - 1 ? '0.5px solid var(--line-1)' : 'none',
+              borderBottom: i < arr.length - 1 ? '0.5px solid var(--rule)' : 'none',
             }}>
               <div style={{ width: 140, fontSize: 12.5, color: 'var(--ink-3)' }}>{row.label}</div>
-              <div style={{ flex: 1, fontSize: 13.5, color: 'var(--ink-1)' }}>{row.value}</div>
+              <div style={{ flex: 1, fontSize: 13.5, color: 'var(--ink)' }}>{row.value}</div>
               {row.sub && <div style={{ fontSize: 11.5, color: 'var(--ink-3)' }}>{row.sub}</div>}
               {row.action && <Btn variant="secondary" size="sm">{row.action}</Btn>}
             </div>
@@ -623,8 +623,8 @@ function AuthScreen({ onAuth }) {
 
       {/* Right form */}
       <div style={{ padding: '60px 80px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-        <div className="eyebrow" style={{ color: 'var(--green-700)' }}>{mode === 'login' ? 'Welcome back' : 'Start growing'}</div>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 30, fontWeight: 700, color: 'var(--navy-700)', marginTop: 8, letterSpacing: '-0.02em' }}>
+        <div className="eyebrow" style={{ color: 'var(--moss-2)' }}>{mode === 'login' ? 'Welcome back' : 'Start growing'}</div>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 30, fontWeight: 700, color: 'var(--ink)', marginTop: 8, letterSpacing: '-0.02em' }}>
           {mode === 'login' ? '다시 만나서 반가워요' : '새로운 정원 시작하기'}
         </h1>
         <div style={{ fontSize: 13.5, color: 'var(--ink-2)', marginTop: 8 }}>
@@ -636,8 +636,8 @@ function AuthScreen({ onAuth }) {
           <button style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
             padding: '12px 16px', borderRadius: 10,
-            background: '#fff', border: '1px solid var(--line-2)',
-            fontSize: 13.5, fontWeight: 500, color: 'var(--ink-1)',
+            background: '#fff', border: '1px solid var(--rule-2)',
+            fontSize: 13.5, fontWeight: 500, color: 'var(--ink)',
           }}>
             <svg width="18" height="18" viewBox="0 0 18 18">
               <path d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84c-.21 1.13-.84 2.09-1.8 2.73v2.27h2.92c1.7-1.57 2.68-3.88 2.68-6.64z" fill="#4285F4"/>
@@ -659,9 +659,9 @@ function AuthScreen({ onAuth }) {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '24px 0', color: 'var(--ink-3)', fontSize: 11, fontFamily: 'var(--font-display)' }}>
-          <div style={{ flex: 1, height: 0.5, background: 'var(--line-2)' }} />
+          <div style={{ flex: 1, height: 0.5, background: 'var(--rule-2)' }} />
           <span>또는 이메일로</span>
-          <div style={{ flex: 1, height: 0.5, background: 'var(--line-2)' }} />
+          <div style={{ flex: 1, height: 0.5, background: 'var(--rule-2)' }} />
         </div>
 
         {/* Form */}
@@ -671,7 +671,7 @@ function AuthScreen({ onAuth }) {
               <label style={{ fontSize: 11.5, color: 'var(--ink-3)', fontFamily: 'var(--font-display)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>닉네임</label>
               <input placeholder="정원에서 불릴 이름" style={{
                 width: '100%', padding: '12px 14px', marginTop: 6,
-                borderRadius: 10, border: '0.5px solid var(--line-2)',
+                borderRadius: 10, border: '0.5px solid var(--rule-2)',
                 fontSize: 14, outline: 'none', background: '#fff',
               }} />
             </div>
@@ -680,7 +680,7 @@ function AuthScreen({ onAuth }) {
             <label style={{ fontSize: 11.5, color: 'var(--ink-3)', fontFamily: 'var(--font-display)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>이메일</label>
             <input placeholder="you@example.com" defaultValue="soyeon@rootin.app" style={{
               width: '100%', padding: '12px 14px', marginTop: 6,
-              borderRadius: 10, border: '0.5px solid var(--line-2)',
+              borderRadius: 10, border: '0.5px solid var(--rule-2)',
               fontSize: 14, outline: 'none', background: '#fff',
             }} />
             {mode === 'signup' && <div style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 4 }}>해당 이메일로 인증메일을 전송합니다.</div>}
@@ -689,7 +689,7 @@ function AuthScreen({ onAuth }) {
             <label style={{ fontSize: 11.5, color: 'var(--ink-3)', fontFamily: 'var(--font-display)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>비밀번호</label>
             <input type="password" placeholder="••••••••" defaultValue="rootinrootin" style={{
               width: '100%', padding: '12px 14px', marginTop: 6,
-              borderRadius: 10, border: '0.5px solid var(--line-2)',
+              borderRadius: 10, border: '0.5px solid var(--rule-2)',
               fontSize: 14, outline: 'none', background: '#fff',
             }} />
           </div>
@@ -701,7 +701,7 @@ function AuthScreen({ onAuth }) {
 
         <div style={{ textAlign: 'center', marginTop: 18, fontSize: 12.5, color: 'var(--ink-3)' }}>
           {mode === 'login' ? '아직 계정이 없으세요? ' : '이미 계정이 있으세요? '}
-          <button onClick={() => setMode(mode === 'login' ? 'signup' : 'login')} style={{ color: 'var(--green-700)', fontWeight: 500 }}>
+          <button onClick={() => setMode(mode === 'login' ? 'signup' : 'login')} style={{ color: 'var(--moss-2)', fontWeight: 500 }}>
             {mode === 'login' ? '회원가입' : '로그인'}
           </button>
         </div>

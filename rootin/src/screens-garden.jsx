@@ -24,7 +24,7 @@ function PotCard({ pot, onClick }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <div style={{ fontSize: 11, color: 'var(--ink-3)', fontFamily: 'var(--font-display)', letterSpacing: '0.04em' }}>Lv.{pot.level} · {stageMeta.label}</div>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 600, color: 'var(--navy-700)', marginTop: 4 }}>{pot.emoji} {pot.name}</div>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 600, color: 'var(--ink)', marginTop: 4 }}>{pot.emoji} {pot.name}</div>
         </div>
         {pot.waterToday ? (
           <Pill tone="green"><span style={{ display: 'inline-flex', marginRight: 2 }}>{Icon.drop}</span>오늘 물줌</Pill>
@@ -43,7 +43,7 @@ function PotCard({ pot, onClick }) {
         position: 'relative',
         overflow: 'hidden',
       }}>
-        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 18, height: 1, background: 'linear-gradient(90deg, transparent, var(--green-200), transparent)' }} />
+        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 18, height: 1, background: 'linear-gradient(90deg, transparent, var(--leaf), transparent)' }} />
         <div style={{ paddingBottom: 6 }}>
           <PixelPlant species={pot.species} stage={stage} size={110} />
         </div>
@@ -54,7 +54,7 @@ function PotCard({ pot, onClick }) {
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--ink-3)' }}>
           <span>다음 단계까지 {Math.max(0, stageMeta.next - pot.tilCount)} TIL</span>
-          <span style={{ color: 'var(--green-700)' }}>{pot.tilCount} / {stageMeta.next}</span>
+          <span style={{ color: 'var(--moss-2)' }}>{pot.tilCount} / {stageMeta.next}</span>
         </div>
         <ProgressBar value={pot.tilCount / stageMeta.next} />
       </div>
@@ -261,7 +261,7 @@ function GardenScene({ pots, theme, layout, editMode, onMovePot, onOpenPot, dens
                   top: -8, right: -8,
                   width: 20, height: 20, borderRadius: '50%',
                   background: '#fff',
-                  border: '1px solid var(--line-2)',
+                  border: '1px solid var(--rule-2)',
                   color: '#b8536a',
                   fontSize: 12, fontWeight: 600,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -312,7 +312,7 @@ function GardenScene({ pots, theme, layout, editMode, onMovePot, onOpenPot, dens
               }} />
               <PixelPlant species={pot.species} stage={stage} size={size} glow={pot.species === 'moonlight'} />
               <div style={{
-                fontSize: 10.5, color: isDark ? '#e8f4ec' : 'var(--ink-1)',
+                fontSize: 10.5, color: isDark ? '#e8f4ec' : 'var(--ink)',
                 fontFamily: 'var(--font-display)', fontWeight: 600,
                 padding: '2px 7px', borderRadius: 4,
                 background: isDark ? 'rgba(15, 42, 71, 0.6)' : 'rgba(255, 255, 255, 0.75)',
@@ -334,7 +334,7 @@ function GardenScene({ pots, theme, layout, editMode, onMovePot, onOpenPot, dens
                   top: -8, right: -8,
                   width: 20, height: 20, borderRadius: '50%',
                   background: '#fff',
-                  border: '1px solid var(--line-2)',
+                  border: '1px solid var(--rule-2)',
                   color: '#b8536a',
                   fontSize: 12, fontWeight: 600,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -398,17 +398,17 @@ function GardenScreen({ onOpenPot }) {
       <Card padding={0} style={{
         overflow: 'hidden',
         background: '#fff',
-        border: '0.5px solid var(--line-1)',
+        border: '0.5px solid var(--rule)',
         marginBottom: 24,
       }}>
         <div style={{ padding: '24px 28px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
           <div style={{ minWidth: 0, flex: '1 1 320px' }}>
-            <div className="eyebrow" style={{ color: 'var(--green-700)' }}>나의 정원</div>
-            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 700, color: 'var(--navy-700)', letterSpacing: '-0.02em', marginTop: 4, whiteSpace: 'nowrap' }}>
-              소연님의 정원 · TIL <span style={{ color: 'var(--green-700)' }}>{USER.totalTil}</span>개
+            <div className="eyebrow" style={{ color: 'var(--moss-2)' }}>나의 정원</div>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 700, color: 'var(--ink)', letterSpacing: '-0.02em', marginTop: 4, whiteSpace: 'nowrap' }}>
+              소연님의 정원 · TIL <span style={{ color: 'var(--moss-2)' }}>{USER.totalTil}</span>개
             </h2>
             <div style={{ fontSize: 13, color: 'var(--ink-2)', marginTop: 6 }}>
-              4개의 화분이 자라고 있어요. 오늘 <b style={{ color: 'var(--green-700)' }}>2개</b>의 화분에 물을 줬어요.
+              4개의 화분이 자라고 있어요. 오늘 <b style={{ color: 'var(--moss-2)' }}>2개</b>의 화분에 물을 줬어요.
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
@@ -441,9 +441,9 @@ function GardenScreen({ onOpenPot }) {
           {editMode && (
             <div style={{
               marginTop: 14, padding: '16px 18px',
-              border: '0.5px solid var(--line-1)',
+              border: '0.5px solid var(--rule)',
               borderRadius: 12,
-              background: 'var(--bg-soft)',
+              background: 'var(--paper-2)',
               display: 'grid',
               gridTemplateColumns: 'auto 1px 1fr 1px auto',
               gap: 22,
@@ -459,9 +459,9 @@ function GardenScreen({ onOpenPot }) {
                       <button key={t.id} onClick={() => setThemeId(t.id)} style={{
                         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
                         padding: 6, borderRadius: 8,
-                        background: active ? 'var(--navy-700)' : '#fff',
+                        background: active ? 'var(--ink)' : '#fff',
                         color: active ? '#fff' : 'var(--ink-2)',
-                        border: '0.5px solid ' + (active ? 'var(--navy-700)' : 'var(--line-2)'),
+                        border: '0.5px solid ' + (active ? 'var(--ink)' : 'var(--rule-2)'),
                       }}>
                         <div style={{
                           width: 56, height: 36, borderRadius: 5,
@@ -479,7 +479,7 @@ function GardenScreen({ onOpenPot }) {
                 </div>
               </div>
 
-              <div style={{ width: 1, alignSelf: 'stretch', background: 'var(--line-1)' }} />
+              <div style={{ width: 1, alignSelf: 'stretch', background: 'var(--rule)' }} />
 
               {/* Inventory: harvested plants */}
               <div style={{ minWidth: 0 }}>
@@ -493,7 +493,7 @@ function GardenScreen({ onOpenPot }) {
                   )}
                 </div>
                 {harvestedPlants.length === 0 ? (
-                  <div style={{ fontSize: 12, color: 'var(--ink-3)', padding: '12px 14px', background: '#fff', border: '0.5px dashed var(--line-2)', borderRadius: 8 }}>
+                  <div style={{ fontSize: 12, color: 'var(--ink-3)', padding: '12px 14px', background: '#fff', border: '0.5px dashed var(--rule-2)', borderRadius: 8 }}>
                     아직 수확한 식물이 없어요. 만개 단계까지 키운 뒤 수확하면 여기로 들어와요.
                   </div>
                 ) : (
@@ -511,7 +511,7 @@ function GardenScreen({ onOpenPot }) {
                             padding: '10px 10px 8px',
                             borderRadius: 10,
                             background: '#fff',
-                            border: '0.5px solid ' + (isRare ? '#ccc9f0' : 'var(--line-2)'),
+                            border: '0.5px solid ' + (isRare ? '#ccc9f0' : 'var(--rule-2)'),
                             cursor: 'pointer',
                             position: 'relative',
                             transition: 'transform 100ms ease',
@@ -532,12 +532,12 @@ function GardenScreen({ onOpenPot }) {
                               position: 'absolute', top: 4, right: 5,
                               padding: '0 5px', borderRadius: 8,
                               fontSize: 9, fontFamily: 'var(--font-mono)',
-                              background: 'var(--green-500)', color: '#fff',
+                              background: 'var(--moss)', color: '#fff',
                               minWidth: 14, textAlign: 'center', lineHeight: '12px',
                             }}>{placedCount}</span>
                           )}
                           <PixelPlant species={h.species} stage="full" size={44} />
-                          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--navy-700)', fontFamily: 'var(--font-display)' }}>{monName}</div>
+                          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink)', fontFamily: 'var(--font-display)' }}>{monName}</div>
                           <div style={{ fontSize: 9, color: 'var(--ink-3)', fontFamily: 'var(--font-mono)' }}>{h.pot?.emoji} {h.harvestedAt?.slice(5)}</div>
                         </button>
                       );
@@ -561,15 +561,15 @@ function GardenScreen({ onOpenPot }) {
                               padding: '6px 12px 6px 6px',
                               borderRadius: 10,
                               background: '#fff',
-                              border: '0.5px dashed var(--line-strong)',
+                              border: '0.5px dashed var(--rule-2)',
                               cursor: 'pointer',
                             }}
                           >
                             <PixelPlant species={p.species} stage={stage} size={32} />
-                            <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--ink-1)', fontFamily: 'var(--font-display)' }}>
+                            <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--ink)', fontFamily: 'var(--font-display)' }}>
                               {p.emoji} {p.name}
                             </span>
-                            <span style={{ fontSize: 11, color: 'var(--green-700)' }}>+ 배치</span>
+                            <span style={{ fontSize: 11, color: 'var(--moss-2)' }}>+ 배치</span>
                           </button>
                         );
                       })}
@@ -578,7 +578,7 @@ function GardenScreen({ onOpenPot }) {
                 )}
               </div>
 
-              <div style={{ width: 1, alignSelf: 'stretch', background: 'var(--line-1)' }} />
+              <div style={{ width: 1, alignSelf: 'stretch', background: 'var(--rule)' }} />
 
               <button onClick={resetGarden} style={{
                 padding: '8px 12px', fontSize: 12,
@@ -605,16 +605,16 @@ function GardenScreen({ onOpenPot }) {
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           gap: 14, minHeight: 320,
           background: 'repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(168, 213, 181, 0.08) 8px, rgba(168, 213, 181, 0.08) 16px)',
-          border: '0.5px dashed var(--green-200)',
+          border: '0.5px dashed var(--leaf)',
         }}>
           <div style={{
             width: 56, height: 56, borderRadius: '50%',
-            background: '#fff', border: '0.5px dashed var(--green-200)',
+            background: '#fff', border: '0.5px dashed var(--leaf)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'var(--green-500)',
+            color: 'var(--moss)',
           }}>{Icon.plus}</div>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, color: 'var(--navy-700)', fontSize: 14 }}>새 화분 만들기</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, color: 'var(--ink)', fontSize: 14 }}>새 화분 만들기</div>
             <div style={{ fontSize: 11.5, color: 'var(--ink-3)', marginTop: 4 }}>새로운 주제로 씨앗을 심어요</div>
           </div>
         </Card>
@@ -622,13 +622,13 @@ function GardenScreen({ onOpenPot }) {
 
       <div style={{
         marginTop: 28, padding: '16px 22px',
-        background: '#fff', border: '0.5px solid var(--line-1)',
+        background: '#fff', border: '0.5px solid var(--rule)',
         borderRadius: 12,
         display: 'flex', alignItems: 'center', gap: 18,
       }}>
-        <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--green-50)', color: 'var(--green-700)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🌱</div>
+        <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--paper-2)', color: 'var(--moss-2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🌱</div>
         <div style={{ flex: 1, fontSize: 13, color: 'var(--ink-2)' }}>
-          <b style={{ color: 'var(--navy-700)' }}>운동 화분</b>이 4일째 비어있어요. 한 줄이라도 물을 주면 씨앗이 새싹으로 자라요.
+          <b style={{ color: 'var(--ink)' }}>운동 화분</b>이 4일째 비어있어요. 한 줄이라도 물을 주면 씨앗이 새싹으로 자라요.
         </div>
         <Btn variant="secondary" size="sm">운동 화분으로 이동</Btn>
       </div>
@@ -680,14 +680,14 @@ function PotDetailScreen({ potId, onBack }) {
                 <PixelPlant species={pot.species} stage={stage} size={180} glow={isRare} />
               </div>
               {monName && (
-                <div style={{ marginTop: 12, fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 600, color: 'var(--navy-700)' }}>
+                <div style={{ marginTop: 12, fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 600, color: 'var(--ink)' }}>
                   {monName}
                 </div>
               )}
             </div>
             <div style={{ padding: '20px 24px 22px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, color: 'var(--navy-700)', letterSpacing: '-0.01em' }}>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, color: 'var(--ink)', letterSpacing: '-0.01em' }}>
                   {pot.emoji} {pot.name}
                 </div>
                 <Pill tone={isRare ? 'navy' : 'default'}>{isRare ? '✦ 희귀종' : '일반종'}</Pill>
@@ -699,7 +699,7 @@ function PotDetailScreen({ potId, onBack }) {
               <div style={{ marginTop: 16 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--ink-3)' }}>
                   <span>화분 레벨 진척도</span>
-                  <span style={{ color: 'var(--green-700)' }}>{Math.round(pot.levelProgress * 100)}%</span>
+                  <span style={{ color: 'var(--moss-2)' }}>{Math.round(pot.levelProgress * 100)}%</span>
                 </div>
                 <ProgressBar value={pot.levelProgress} />
               </div>
@@ -728,16 +728,16 @@ function PotDetailScreen({ potId, onBack }) {
                     <div style={{
                       width: 48, height: 48, borderRadius: 8,
                       background: active ? (isRare ? '#eef2fa' : '#e1f5ee') : (reached ? '#f3f6f3' : '#f7f9f7'),
-                      border: active ? `1.5px solid ${isRare ? '#185FA5' : '#0F6E56'}` : '0.5px solid var(--line-1)',
+                      border: active ? `1.5px solid ${isRare ? '#185FA5' : '#0F6E56'}` : '0.5px solid var(--rule)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       opacity: reached ? 1 : 0.4,
                     }}>
                       <PixelPlant species={pot.species} stage={s} size={36} locked={!reached} />
                     </div>
-                    <div style={{ fontSize: 10, color: active ? (isRare ? '#185FA5' : 'var(--green-700)') : 'var(--ink-3)', fontWeight: active ? 600 : 400, fontFamily: 'var(--font-display)' }}>
+                    <div style={{ fontSize: 10, color: active ? (isRare ? '#185FA5' : 'var(--moss-2)') : 'var(--ink-3)', fontWeight: active ? 600 : 400, fontFamily: 'var(--font-display)' }}>
                       {speciesInfo?.stages[s]?.name || STAGE_META[s].label}
                     </div>
-                    <div style={{ fontSize: 9, color: 'var(--ink-4)', fontFamily: 'var(--font-mono)' }}>{STAGE_META[s].min}+</div>
+                    <div style={{ fontSize: 9, color: 'var(--ink-3)', fontFamily: 'var(--font-mono)' }}>{STAGE_META[s].min}+</div>
                   </div>
                 );
               })}
@@ -761,19 +761,19 @@ function PotDetailScreen({ potId, onBack }) {
                     <div style={{ fontSize: 11, color: 'var(--ink-3)', fontFamily: 'var(--font-mono)', marginBottom: 4 }}>
                       {t.date} · {t.chars}자
                     </div>
-                    <div style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 600, color: 'var(--navy-700)' }}>
+                    <div style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 600, color: 'var(--ink)' }}>
                       {t.title}
                     </div>
                     <div style={{ fontSize: 13, color: 'var(--ink-2)', lineHeight: 1.6, marginTop: 6 }}>{t.excerpt}</div>
                     <div style={{ display: 'flex', gap: 5, marginTop: 10, flexWrap: 'wrap' }}>
                       {t.tags.map(tag => (
-                        <span key={tag} style={{ fontSize: 10.5, padding: '2px 8px', borderRadius: 999, background: 'var(--bg-soft)', color: 'var(--ink-3)', fontFamily: 'var(--font-mono)' }}>
+                        <span key={tag} style={{ fontSize: 10.5, padding: '2px 8px', borderRadius: 999, background: 'var(--paper-2)', color: 'var(--ink-3)', fontFamily: 'var(--font-mono)' }}>
                           #{tag}
                         </span>
                       ))}
                     </div>
                   </div>
-                  <div style={{ width: 56, height: 56, borderRadius: 10, background: isRare ? '#eef2fa' : 'var(--green-50)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <div style={{ width: 56, height: 56, borderRadius: 10, background: isRare ? '#eef2fa' : 'var(--paper-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <PixelPlant species={pot.species} stage={stage} size={42} />
                   </div>
                 </div>
@@ -803,8 +803,8 @@ function HarvestModal({ pot, onClose }) {
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 18 }}>
           <PixelPlant species={pot.species} stage="full" size={140} glow={pot.species === 'moonlight'} />
         </div>
-        <div className="eyebrow" style={{ color: 'var(--green-700)' }}>수확하기</div>
-        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, color: 'var(--navy-700)', marginTop: 6 }}>
+        <div className="eyebrow" style={{ color: 'var(--moss-2)' }}>수확하기</div>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, color: 'var(--ink)', marginTop: 6 }}>
           {pot.emoji} {pot.name}의 식물을 수확할까요?
         </h2>
         <div style={{ fontSize: 13, color: 'var(--ink-2)', marginTop: 8, lineHeight: 1.6 }}>
@@ -814,15 +814,15 @@ function HarvestModal({ pot, onClose }) {
         <div style={{
           margin: '20px 0',
           padding: '12px 16px',
-          background: 'var(--bg-soft)',
+          background: 'var(--paper-2)',
           borderRadius: 10,
           fontSize: 11.5, color: 'var(--ink-3)',
           fontFamily: 'var(--font-mono)',
           display: 'flex', justifyContent: 'space-around',
         }}>
-          <span>수확일 <b style={{ color: 'var(--ink-1)' }}>2026.05.22</b></span>
-          <span>화분 Lv.<b style={{ color: 'var(--ink-1)' }}>{pot.level}</b></span>
-          <span>총 <b style={{ color: 'var(--ink-1)' }}>{pot.tilCount} TIL</b></span>
+          <span>수확일 <b style={{ color: 'var(--ink)' }}>2026.05.22</b></span>
+          <span>화분 Lv.<b style={{ color: 'var(--ink)' }}>{pot.level}</b></span>
+          <span>총 <b style={{ color: 'var(--ink)' }}>{pot.tilCount} TIL</b></span>
         </div>
         <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
           <Btn variant="secondary" size="lg" style={{ flex: 1 }} onClick={onClose}>현재 식물 유지</Btn>
