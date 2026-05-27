@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build-and-push:
     name: Build & Push Docker Image
@@ -21,7 +24,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build & Push FE image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
@@ -29,5 +32,3 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/rootin-fe:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/rootin-fe:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
