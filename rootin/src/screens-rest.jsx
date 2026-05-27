@@ -234,24 +234,143 @@ function CollectionScreen() {
 
 // === AI Screen ===
 
+function PotCard({ pot, selected, onClick }) {
+  const tilsInPot = TILS.filter(t => t.potId === pot.id).length;
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 12,
+        padding: '12px 14px', borderRadius: 10, textAlign: 'left', width: '100%',
+        background: selected ? 'var(--paper-2)' : '#fff',
+        border: selected ? '1.5px solid var(--moss)' : '0.5px solid var(--rule)',
+        position: 'relative',
+        transition: 'border-color 0.12s, background 0.12s',
+      }}
+    >
+      {/* 이모지 + 배경 */}
+      <div style={{
+        width: 44, height: 44, borderRadius: 10, flexShrink: 0,
+        background: selected ? 'var(--paper)' : '#f7f9f7',
+        border: '0.5px solid var(--rule)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 22,
+      }}>
+        {pot.emoji}
+      </div>
+
+      {/* 텍스트 */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--ink)', fontFamily: 'var(--font-display)' }}>{pot.name}</span>
+          <span style={{ fontSize: 11, color: 'var(--ink-3)', fontFamily: 'var(--font-mono)' }}>Lv.{pot.level}</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+          <span style={{ fontSize: 11.5, color: 'var(--ink-3)' }}>TIL {tilsInPot}개</span>
+          {/* 레벨 진행 바 */}
+          <div style={{ flex: 1, height: 3, borderRadius: 2, background: 'var(--rule)', overflow: 'hidden' }}>
+            <div style={{ width: `${pot.levelProgress * 100}%`, height: '100%', background: selected ? 'var(--moss)' : 'var(--leaf)', borderRadius: 2, transition: 'width 0.2s' }} />
+          </div>
+          <span style={{ fontSize: 10, color: 'var(--ink-3)', fontFamily: 'var(--font-mono)', whiteSpace: 'nowrap' }}>{Math.round(pot.levelProgress * 100)}%</span>
+        </div>
+      </div>
+
+      {/* 선택 체크 배지 */}
+      {selected && (
+        <div style={{
+          width: 20, height: 20, borderRadius: '50%',
+          background: 'var(--moss)', flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: '#fff',
+        }}>
+          {Icon.check}
+        </div>
+      )}
+    </button>
+  );
+}
+
 function AIScreen() {
   const [mode, setMode] = useState('quiz'); // quiz | summary
-  const [selected, setSelected] = useState(['t1', 't4', 't6']);
+  const [potId, setPotId] = useState('coding');
+  const [quizCount, setQuizCount] = useState(5);
   const [generating, setGenerating] = useState(false);
+  const [generated, setGenerated] = useState(false); // 생성 완료 여부
 
-  const toggle = (id) => setSelected(selected.includes(id) ? selected.filter(x => x !== id) : [...selected, id]);
+  // ➕ 추가: 보관함 목록을 관리할 가짜 데이터 State
+  const [savedResults, setSavedResults] = useState([
+    {
+      id: 1,
+      type: 'quiz',
+      title: '백엔드 화분 복습 문제 (3문항)',
+      date: '05.25',
+      quizCount: 3,
+      pot: POTS.find(p => p.id === 'coding')
+    },
+    {
+      id: 2,
+      type: 'summary',
+      title: '데이터베이스 화분 요약본',
+      date: '05.24',
+      pot: POTS.find(p => p.id === 'english')
+    }
+  ]);
+
+  const selectedPot = POTS.find(p => p.id === potId) ?? null;
+
+  // ➕ 추가: 보관함 리스트 클릭 시 해당 데이터를 우측 결과창에 바인딩하는 함수
+  const handleSelectSavedItem = (item) => {
+    setMode(item.type);
+    if (item.pot) setPotId(item.pot.id);
+    if (item.quizCount) setQuizCount(item.quizCount);
+    setGenerated(true); // 결과창 컴포넌트를 그리기 위해 true로 변경
+  };
+
+  const handleGenerate = () => {
+    if (!potId) return;
+    setGenerating(true);
+    setGenerated(false);
+    setTimeout(() => {
+      setGenerating(false);
+      setGenerated(true);
+    }, 800);
+  };
+
+  // 화분 or 모드가 바뀌면 결과 초기화
+  const handlePotChange = (id) => {
+    setPotId(id);
+    setGenerated(false);
+  };
+
+  const [saved, setSaved] = useState(false); // 저장 완료 피드백용
+
+  const handleSave = () => {
+    if (!generated || !selectedPot) return;
+    const now = new Date();
+    const date = `${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`;
+    const title = mode === 'quiz'
+      ? `${selectedPot.name} 화분 복습 문제 (${quizCount}문항)`
+      : `${selectedPot.name} 화분 요약본`;
+
+    setSavedResults(prev => [
+      { id: Date.now(), type: mode, title, date, quizCount: mode === 'quiz' ? quizCount : undefined, pot: selectedPot },
+      ...prev,
+    ]);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
 
   return (
     <div style={{ padding: 32, display: 'grid', gridTemplateColumns: '360px 1fr', gap: 24, maxWidth: 1280, margin: '0 auto' }}>
 
       {/* Left — source picker */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <div>
         <SectionHeader eyebrow="입력" title="학습 소스 선택" />
-
         <Card padding={18} style={{ marginBottom: 16 }}>
           <div className="eyebrow" style={{ marginBottom: 8 }}>목적</div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button onClick={() => setMode('quiz')} style={{
+            <button onClick={() => { setMode('quiz'); setGenerated(false); }} style={{
               flex: 1, padding: '12px 10px', borderRadius: 10,
               background: mode === 'quiz' ? 'var(--ink)' : '#fff',
               color: mode === 'quiz' ? '#fff' : 'var(--ink-2)',
@@ -259,9 +378,9 @@ function AIScreen() {
               fontSize: 12.5, fontWeight: 500, textAlign: 'left',
             }}>
               <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, marginBottom: 4 }}>📝 복습 문제 생성</div>
-              <div style={{ fontSize: 10.5, opacity: 0.7, lineHeight: 1.5 }}>TIL에서 5문제 자동 생성</div>
+              <div style={{ fontSize: 10.5, opacity: 0.7, lineHeight: 1.5 }}>TIL에서 {quizCount}문제 자동 생성</div>
             </button>
-            <button onClick={() => setMode('summary')} style={{
+            <button onClick={() => { setMode('summary'); setGenerated(false); }} style={{
               flex: 1, padding: '12px 10px', borderRadius: 10,
               background: mode === 'summary' ? 'var(--ink)' : '#fff',
               color: mode === 'summary' ? '#fff' : 'var(--ink-2)',
@@ -272,43 +391,67 @@ function AIScreen() {
               <div style={{ fontSize: 10.5, opacity: 0.7, lineHeight: 1.5 }}>핵심 개념을 한 문서로</div>
             </button>
           </div>
+          {mode === 'quiz' && (
+            <div style={{
+              marginTop: 12, paddingTop: 12,
+              borderTop: '0.5px solid var(--rule)',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            }}>
+              <span style={{ fontSize: 12.5, color: 'var(--ink-2)' }}>문제 수량</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <button
+                  onClick={() => setQuizCount(c => Math.max(1, c - 1))}
+                  style={{
+                    width: 28, height: 28, borderRadius: 7,
+                    border: '0.5px solid var(--rule-2)', background: '#fff',
+                    fontSize: 15, color: 'var(--ink-2)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}
+                >−</button>
+                <span style={{
+                  width: 28, textAlign: 'center',
+                  fontFamily: 'var(--font-mono)', fontSize: 14, fontWeight: 600, color: 'var(--ink)',
+                }}>{quizCount}</span>
+                <button
+                  onClick={() => setQuizCount(c => Math.min(10, c + 1))}
+                  style={{
+                    width: 28, height: 28, borderRadius: 7,
+                    border: '0.5px solid var(--rule-2)', background: '#fff',
+                    fontSize: 15, color: 'var(--ink-2)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}
+                >+</button>
+                <span style={{ fontSize: 11, color: 'var(--ink-3)' }}>최대 10문제</span>
+              </div>
+            </div>
+          )}
         </Card>
 
         <Card padding={18}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-            <div className="eyebrow">학습할 TIL · {selected.length}개 선택</div>
-            <button style={{ fontSize: 11, color: 'var(--moss-2)', fontFamily: 'var(--font-display)', fontWeight: 500 }}>전체 선택</button>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 420, overflow: 'auto', paddingRight: 4 }} className="scrollbar">
-            {TILS.map(t => {
-              const pot = POTS.find(p => p.id === t.potId);
-              const checked = selected.includes(t.id);
-              return (
-                <button key={t.id} onClick={() => toggle(t.id)} style={{
-                  display: 'flex', alignItems: 'flex-start', gap: 10,
-                  padding: '10px 12px', borderRadius: 9,
-                  background: checked ? 'var(--paper-2)' : '#fff',
-                  border: '0.5px solid ' + (checked ? 'var(--leaf)' : 'var(--rule)'),
-                  textAlign: 'left',
-                }}>
-                  <div style={{
-                    width: 18, height: 18, borderRadius: 5,
-                    background: checked ? 'var(--moss)' : '#fff',
-                    border: checked ? 'none' : '1px solid var(--rule-2)',
-                    color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    marginTop: 2, flexShrink: 0,
-                  }}>{checked && Icon.check}</div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 11, color: 'var(--ink-3)', fontFamily: 'var(--font-mono)' }}>{pot.emoji} {pot.name} · {t.date}</div>
-                    <div style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--ink)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.title}</div>
-                  </div>
-                </button>
-              );
-            })}
+          <div style={{ marginBottom: 12 }}>
+            <div className="eyebrow">화분 선택</div>
+            <div style={{ fontSize: 11.5, color: 'var(--ink-3)', marginTop: 4 }}>
+              학습할 화분을 하나 선택하세요
+            </div>
           </div>
 
-          <Btn variant="green" size="lg" style={{ width: '100%', marginTop: 14 }} onClick={() => { setGenerating(true); setTimeout(() => setGenerating(false), 800); }}>
-            {mode === 'quiz' ? '🌱 복습 문제 만들기' : '✨ 요약 생성하기'} · 80 토큰 사용
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 420, overflow: 'auto', paddingRight: 4 }} className="scrollbar">
+            {POTS.map(p => (
+              <PotCard
+                key={p.id}
+                pot={p}
+                selected={potId === p.id}
+                onClick={() => handlePotChange(p.id)}
+              />
+            ))}
+          </div>
+
+          <Btn
+            variant="green" size="lg"
+            style={{ width: '100%', marginTop: 14, opacity: potId ? 1 : 0.45, cursor: potId ? 'pointer' : 'not-allowed' }}
+            onClick={handleGenerate}
+          >
+            {generating ? '생성 중...' : (mode === 'quiz' ? `🌱 복습 문제 ${quizCount}개 만들기` : '✨ 요약 생성하기')} · {mode === 'quiz' ? quizCount * 10 : 50} 포인트 사용
           </Btn>
           <div style={{ marginTop: 8, fontSize: 11, color: 'var(--ink-3)', textAlign: 'center' }}>
             현재 보유: <b style={{ color: 'var(--ink)' }}>{USER.points}P</b> · 포인트는 활동으로 적립돼요
@@ -316,24 +459,77 @@ function AIScreen() {
         </Card>
       </div>
 
+        {/* ➕ 추가: 저장된 AI 결과 목록(보관함) UI 신규 배치 */}
+        <div>
+          <SectionHeader eyebrow="보관함" title="저장된 AI 결과" />
+          <Card padding={14} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {savedResults.length === 0 ? (
+                <div style={{ padding: '20px 0', textAlign: 'center', fontSize: 12, color: 'var(--ink-3)' }}>
+                  저장된 결과지가 없습니다.
+                </div>
+            ) : (
+                savedResults.map(item => (
+                    <div
+                        key={item.id}
+                        onClick={() => handleSelectSavedItem(item)} // 클릭 이벤트 바인딩
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          padding: '10px 12px', borderRadius: 8, background: '#fcfdfb',
+                          border: '0.5px solid var(--rule)', cursor: 'pointer'
+                        }}
+                    >
+                  <span style={{ fontSize: 12.5, color: 'var(--ink)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 240 }}>
+                    {item.type === 'quiz' ? '📝 ' : '✨ '} {item.title}
+                  </span>
+                      <span style={{ fontSize: 11, color: 'var(--ink-3)', fontFamily: 'var(--font-mono)' }}>{item.date}</span>
+                    </div>
+                ))
+            )}
+          </Card>
+        </div>
+
+      </div>
+
       {/* Right — output */}
       <div>
-        <SectionHeader eyebrow="AI 결과지" title={mode === 'quiz' ? '복습 문제 (5문항)' : 'TIL 요약 결과지'} action={
-          <div style={{ display: 'flex', gap: 8 }}>
-            <Btn variant="secondary" size="sm">다시 생성</Btn>
-            <Btn variant="primary" size="sm">결과 저장</Btn>
-          </div>
-        } />
+        <SectionHeader
+          eyebrow="AI 결과지"
+          title={mode === 'quiz' ? `복습 문제 (${quizCount}문항)` : 'TIL 요약 결과지'}
+          action={generated ? (
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Btn variant="secondary" size="sm" onClick={handleGenerate}>다시 생성</Btn>
+              <Btn variant="primary" size="sm" onClick={handleSave}>
+                {saved ? '✓ 저장됨' : '결과 저장'}
+              </Btn>
+            </div>
+          ) : null}
+        />
 
         <Card padding={28}>
-          {mode === 'quiz' ? <QuizResult /> : <SummaryResult />}
+          {generating ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, padding: '60px 0', color: 'var(--ink-3)' }}>
+              <div style={{ fontSize: 32 }}>🌱</div>
+              <div style={{ fontSize: 13.5, color: 'var(--ink-2)', fontFamily: 'var(--font-display)' }}>AI가 TIL을 분석하고 있어요...</div>
+            </div>
+          ) : !generated ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, padding: '60px 0' }}>
+              <div style={{ fontSize: 40, opacity: 0.35 }}>{mode === 'quiz' ? '📝' : '✨'}</div>
+              <div style={{ fontSize: 13.5, color: 'var(--ink-3)', fontFamily: 'var(--font-display)' }}>
+                화분을 선택하고 생성 버튼을 눌러주세요
+              </div>
+            </div>
+          ) : mode === 'quiz' ? (
+            <QuizResult pot={selectedPot} quizCount={quizCount} />
+          ) : (
+            <SummaryResult pot={selectedPot} />
+          )}
         </Card>
       </div>
     </div>
   );
 }
 
-function QuizResult() {
+function QuizResult({ pot, quizCount }) {
   const quiz = [
     {
       q: 'CSS Container Queries에서 부모 요소에 반드시 지정해야 하는 속성은?',
@@ -363,7 +559,7 @@ function QuizResult() {
         padding: 16, background: 'var(--paper-2)', borderRadius: 10,
         fontSize: 12.5, color: 'var(--ink-2)', borderLeft: '2px solid var(--moss)',
       }}>
-        💡 선택한 3개의 TIL에서 핵심 개념 5문항을 추출했어요. 답을 적고 저장하면 학습 기록에 남아요.
+        💡 {pot.emoji} {pot.name} 화분의 TIL에서 핵심 개념 {quizCount}문항을 추출했어요. 답을 적고 저장하면 학습 기록에 남아요.
       </div>
 
       {quiz.map((q, i) => (
@@ -417,14 +613,14 @@ function QuizResult() {
   );
 }
 
-function SummaryResult() {
+function SummaryResult({ pot }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
       <div style={{
         padding: 16, background: 'var(--paper-2)', borderRadius: 10,
         fontSize: 12.5, color: 'var(--ink-2)', borderLeft: '2px solid var(--moss)',
       }}>
-        🌿 선택한 3개 TIL의 핵심을 한 문서로 묶었어요.
+        🌿 {pot ? `${pot.emoji} ${pot.name} 화분의 TIL 핵심을 한 문서로 묶었어요.` : 'TIL 핵심을 한 문서로 묶었어요.'}
       </div>
       <div>
         <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: 'var(--ink)', marginBottom: 8 }}>
