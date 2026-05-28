@@ -46,9 +46,10 @@ describe('saveResult', () => {
     const content = { summary: '테스트 요약' };
     await saveResult('SUMMARY', 'pot-001', content);
 
+    // content는 BE의 String 타입에 맞게 JSON.stringify되어 전달됨
     expect(request).toHaveBeenCalledWith('/api/v1/ai/results', {
       method: 'POST',
-      body: JSON.stringify({ type: 'SUMMARY', potId: 'pot-001', content }),
+      body: JSON.stringify({ type: 'SUMMARY', potId: 'pot-001', content: JSON.stringify(content) }),
     });
   });
 });
