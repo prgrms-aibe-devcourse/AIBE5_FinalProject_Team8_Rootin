@@ -366,18 +366,24 @@ function AIScreen() {
   useEffect(() => {
     fetchResults()
       .then(data => {
-        const items = (data.results ?? []).map(r => ({
-          id: r.resultId,
-          type: r.type.toLowerCase(),   // 'QUIZ' → 'quiz'
-          potId: r.potId,
-          pot: pots.find(p => p.id === r.potId) ?? null,
-          content: r.content,
-          title: r.type === 'QUIZ'
-            ? `${pots.find(p => p.id === r.potId)?.title ?? r.potId} 화분 복습 문제`
-            : `${pots.find(p => p.id === r.potId)?.title ?? r.potId} 화분 요약본`,
-          date: new Date(r.createdAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' }).replace('. ', '.').replace('.', '').slice(0, 5),
-          quizCount: r.type === 'QUIZ' ? r.content?.quizzes?.length : undefined,
-        }));
+        const list = Array.isArray(data) ? data : (data.results ?? []);
+        const items = list.map(r => {
+          const content = typeof r.content === 'string'
+            ? (() => { try { return JSON.parse(r.content); } catch { return null; } })()
+            : r.content;
+          return {
+            id: r.resultId,
+            type: r.type.toLowerCase(),   // 'QUIZ' → 'quiz'
+            potId: r.potId,
+            pot: pots.find(p => p.id === r.potId) ?? null,
+            content,
+            title: r.type === 'QUIZ'
+              ? `${pots.find(p => p.id === r.potId)?.title ?? r.potId} 화분 복습 문제`
+              : `${pots.find(p => p.id === r.potId)?.title ?? r.potId} 화분 요약본`,
+            date: new Date(r.createdAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' }).replace('. ', '.').replace('.', '').slice(0, 5),
+            quizCount: r.type === 'QUIZ' ? content?.quizzes?.length : undefined,
+          };
+        });
         setSavedResults(items);
       })
       .catch(() => {
