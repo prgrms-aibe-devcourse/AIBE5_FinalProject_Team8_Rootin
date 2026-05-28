@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DEX, TILS, POTS, USER } from './data.jsx';
+import { generateSummary, generateQuiz, saveResult, fetchResults, deleteResult } from './api/ai.js';
 import { Icon, Pill, Btn, Card, SectionHeader } from './ui.jsx';
 import { PixelPlant, PIXEL_SPECIES } from './pixel-plants.jsx';
 import { Plant, STAGE_META } from './plants.jsx';
@@ -295,67 +296,129 @@ function AIScreen() {
   const [potId, setPotId] = useState('coding');
   const [quizCount, setQuizCount] = useState(5);
   const [generating, setGenerating] = useState(false);
-  const [generated, setGenerated] = useState(false); // 생성 완료 여부
+  const [generated, setGenerated] = useState(false);
 
-  // ➕ 추가: 보관함 목록을 관리할 가짜 데이터 State
-  const [savedResults, setSavedResults] = useState([
-    {
-      id: 1,
-      type: 'quiz',
-      title: '백엔드 화분 복습 문제 (3문항)',
-      date: '05.25',
-      quizCount: 3,
-      pot: POTS.find(p => p.id === 'coding')
-    },
-    {
-      id: 2,
-      type: 'summary',
-      title: '데이터베이스 화분 요약본',
-      date: '05.24',
-      pot: POTS.find(p => p.id === 'english')
-    }
-  ]);
+  // API 응답 원문 (QuizResult / SummaryResult에 전달)
+  const [aiResult, setAiResult] = useState(null);
+  // 에러 메시지 (null이면 에러 없음)
+  const [error, setError] = useState(null);
+  // 포인트 — AI 응답의 remainPoint로 즉시 갱신
+  const [remainPoint, setRemainPoint] = useState(USER.points);
+
+  // 보관함 목록
+  const [savedResults, setSavedResults] = useState([]);
+
+  // 저장 완료 피드백용
+  const [saved, setSaved] = useState(false);
 
   const selectedPot = POTS.find(p => p.id === potId) ?? null;
 
-  // ➕ 추가: 보관함 리스트 클릭 시 해당 데이터를 우측 결과창에 바인딩하는 함수
+  // 페이지 진입 시 보관함 목록 로딩
+  useEffect(() => {
+    fetchResults()
+      .then(data => {
+        const items = (data.results ?? []).map(r => ({
+          id: r.resultId,
+          type: r.type.toLowerCase(),   // 'QUIZ' → 'quiz'
+          potId: r.potId,
+          pot: POTS.find(p => p.id === r.potId) ?? null,
+          content: r.content,
+          title: r.type === 'QUIZ'
+            ? `${POTS.find(p => p.id === r.potId)?.name ?? r.potId} 화분 복습 문제`
+            : `${POTS.find(p => p.id === r.potId)?.name ?? r.potId} 화분 요약본`,
+          date: new Date(r.createdAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' }).replace('. ', '.').replace('.', '').slice(0, 5),
+          quizCount: r.type === 'QUIZ' ? r.content?.quizzes?.length : undefined,
+        }));
+        setSavedResults(items);
+      })
+      .catch(() => {
+        // 보관함 로딩 실패는 조용히 무시 (빈 목록 유지)
+      });
+  }, []);
+
+  // 보관함 항목 클릭 — 결과창에 바인딩
   const handleSelectSavedItem = (item) => {
     setMode(item.type);
     if (item.pot) setPotId(item.pot.id);
     if (item.quizCount) setQuizCount(item.quizCount);
-    setGenerated(true); // 결과창 컴포넌트를 그리기 위해 true로 변경
+    setAiResult(item.content ?? null);
+    setGenerated(true);
+    setError(null);
   };
 
-  const handleGenerate = () => {
+  // 생성 버튼 — mode에 따라 summary/quiz API 호출
+  const handleGenerate = async () => {
     if (!potId) return;
     setGenerating(true);
     setGenerated(false);
-    setTimeout(() => {
-      setGenerating(false);
+    setAiResult(null);
+    setError(null);
+
+    try {
+      const data = mode === 'summary'
+        ? await generateSummary(potId)
+        : await generateQuiz(potId, quizCount);
+
+      setAiResult(data);
+      setRemainPoint(data.remainPoint);
       setGenerated(true);
-    }, 800);
+    } catch (err) {
+      if (err.status === 402) {
+        setError('포인트가 부족해요. 활동으로 포인트를 적립해 보세요.');
+      } else {
+        setError('생성에 실패했어요. 잠시 후 다시 시도해 주세요.');
+      }
+    } finally {
+      setGenerating(false);
+    }
   };
 
   const handlePotChange = (id) => {
     setPotId(id);
   };
 
-  const [saved, setSaved] = useState(false); // 저장 완료 피드백용
+  // 결과 저장 버튼 — POST /ai/results
+  const handleSave = async () => {
+    if (!generated || !selectedPot || !aiResult) return;
 
-  const handleSave = () => {
-    if (!generated || !selectedPot) return;
-    const now = new Date();
-    const date = `${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`;
-    const title = mode === 'quiz'
-      ? `${selectedPot.name} 화분 복습 문제 (${quizCount}문항)`
-      : `${selectedPot.name} 화분 요약본`;
+    try {
+      const apiType = mode === 'quiz' ? 'QUIZ' : 'SUMMARY';
+      const saved_res = await saveResult(apiType, potId, aiResult);
 
-    setSavedResults(prev => [
-      { id: Date.now(), type: mode, title, date, quizCount: mode === 'quiz' ? quizCount : undefined, pot: selectedPot },
-      ...prev,
-    ]);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+      const now = new Date();
+      const date = `${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`;
+      const title = mode === 'quiz'
+        ? `${selectedPot.name} 화분 복습 문제 (${quizCount}문항)`
+        : `${selectedPot.name} 화분 요약본`;
+
+      setSavedResults(prev => [
+        {
+          id: saved_res.resultId,
+          type: mode,
+          title,
+          date,
+          quizCount: mode === 'quiz' ? quizCount : undefined,
+          pot: selectedPot,
+          content: aiResult,
+        },
+        ...prev,
+      ]);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch {
+      setError('저장에 실패했어요. 잠시 후 다시 시도해 주세요.');
+    }
+  };
+
+  // 보관함 항목 삭제 — DELETE /ai/results/{resultId}
+  const handleDelete = async (e, resultId) => {
+    e.stopPropagation(); // 클릭이 상위 handleSelectSavedItem으로 전파되지 않도록
+    try {
+      await deleteResult(resultId);
+      setSavedResults(prev => prev.filter(r => r.id !== resultId));
+    } catch {
+      setError('삭제에 실패했어요. 잠시 후 다시 시도해 주세요.');
+    }
   };
 
   return (
@@ -452,8 +515,17 @@ function AIScreen() {
             {generating ? '생성 중...' : (mode === 'quiz' ? `🌱 복습 문제 ${quizCount}개 만들기` : '✨ 요약 생성하기')} · {mode === 'quiz' ? quizCount * 10 : 50} 포인트 사용
           </Btn>
           <div style={{ marginTop: 8, fontSize: 11, color: 'var(--ink-3)', textAlign: 'center' }}>
-            현재 보유: <b style={{ color: 'var(--ink)' }}>{USER.points}P</b> · 포인트는 활동으로 적립돼요
+            현재 보유: <b style={{ color: 'var(--ink)' }}>{remainPoint}P</b> · 포인트는 활동으로 적립돼요
           </div>
+          {error && (
+            <div style={{
+              marginTop: 8, padding: '10px 14px', borderRadius: 8,
+              background: '#fff3f5', border: '0.5px solid #f7c1c1',
+              fontSize: 12, color: '#b8536a', textAlign: 'center',
+            }}>
+              {error}
+            </div>
+          )}
         </Card>
       </div>
 
@@ -469,17 +541,30 @@ function AIScreen() {
                 savedResults.map(item => (
                     <div
                         key={item.id}
-                        onClick={() => handleSelectSavedItem(item)} // 클릭 이벤트 바인딩
+                        onClick={() => handleSelectSavedItem(item)}
                         style={{
                           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                           padding: '10px 12px', borderRadius: 8, background: '#fcfdfb',
                           border: '0.5px solid var(--rule)', cursor: 'pointer'
                         }}
                     >
-                  <span style={{ fontSize: 12.5, color: 'var(--ink)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 240 }}>
+                  <span style={{ fontSize: 12.5, color: 'var(--ink)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 200 }}>
                     {item.type === 'quiz' ? '📝 ' : '✨ '} {item.title}
                   </span>
-                      <span style={{ fontSize: 11, color: 'var(--ink-3)', fontFamily: 'var(--font-mono)' }}>{item.date}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                        <span style={{ fontSize: 11, color: 'var(--ink-3)', fontFamily: 'var(--font-mono)' }}>{item.date}</span>
+                        <button
+                          onClick={(e) => handleDelete(e, item.id)}
+                          aria-label="삭제"
+                          style={{
+                            width: 20, height: 20, borderRadius: 5,
+                            border: '0.5px solid var(--rule-2)', background: '#fff',
+                            fontSize: 11, color: 'var(--ink-3)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            cursor: 'pointer',
+                          }}
+                        >✕</button>
+                      </div>
                     </div>
                 ))
             )}
@@ -517,9 +602,9 @@ function AIScreen() {
               </div>
             </div>
           ) : mode === 'quiz' ? (
-            <QuizResult pot={selectedPot} quizCount={quizCount} />
+            <QuizResult pot={selectedPot} quizCount={quizCount} quizzes={aiResult?.quizzes ?? null} />
           ) : (
-            <SummaryResult pot={selectedPot} />
+            <SummaryResult pot={selectedPot} summary={aiResult?.summary ?? null} keyPoints={aiResult?.keyPoints ?? null} />
           )}
         </Card>
       </div>
@@ -527,73 +612,38 @@ function AIScreen() {
   );
 }
 
-function QuizResult({ pot, quizCount }) {
-  const quiz = [
-    {
-      q: 'CSS Container Queries에서 부모 요소에 반드시 지정해야 하는 속성은?',
-      choices: ['display: grid', 'container-type: inline-size', '@media (min-width)', 'aspect-ratio: 1'],
-      answer: 1,
-      from: 'CSS Container Queries 처음 써본 날',
-      myAnswer: 1,
-    },
-    {
-      q: 'PostgreSQL에서 전문검색(full-text search)에 가장 적합한 인덱스는?',
-      choices: ['B-tree', 'Hash', 'GIN', 'BRIN'],
-      answer: 2,
-      from: 'PostgreSQL 인덱스 종류 정리',
-      myAnswer: null,
-    },
-    {
-      q: 'React Server Component에서 클라이언트 컴포넌트로 전환할 때 사용하는 지시어는?',
-      choices: ['"use server"', '"use client"', '"use browser"', '"use hook"'],
-      answer: 1,
-      from: 'React Server Component 멘탈모델',
-      myAnswer: null,
-    },
-  ];
+function QuizResult({ pot, quizCount, quizzes }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
       <div style={{
         padding: 16, background: 'var(--paper-2)', borderRadius: 10,
         fontSize: 12.5, color: 'var(--ink-2)', borderLeft: '2px solid var(--moss)',
       }}>
-        💡 {pot.emoji} {pot.name} 화분의 TIL에서 핵심 개념 {quizCount}문항을 추출했어요. 답을 적고 저장하면 학습 기록에 남아요.
+        💡 {pot?.emoji} {pot?.name} 화분의 TIL에서 핵심 개념 {quizCount}문항을 추출했어요. 답을 적고 저장하면 학습 기록에 남아요.
       </div>
 
-      {quiz.map((q, i) => (
+      {(quizzes ?? []).map((q, i) => (
         <div key={i}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
-            <span style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: 'var(--moss-2)' }}>0{i + 1}</span>
-            <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--ink)', lineHeight: 1.6, flex: 1 }}>{q.q}</span>
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: 'var(--moss-2)' }}>
+              {String(i + 1).padStart(2, '0')}
+            </span>
+            <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--ink)', lineHeight: 1.6, flex: 1 }}>{q.question}</span>
           </div>
-          <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8, paddingLeft: 28 }}>
-            {q.choices.map((c, ci) => {
-              const isMine = q.myAnswer === ci;
-              const isAns = q.answer === ci;
-              return (
-                <div key={ci} style={{
-                  display: 'flex', alignItems: 'center', gap: 10,
-                  padding: '10px 14px', borderRadius: 9,
-                  background: isMine ? (isAns ? 'var(--paper-2)' : '#fff') : '#fff',
-                  border: '0.5px solid ' + (isMine && isAns ? 'var(--moss)' : 'var(--rule)'),
-                  fontSize: 13, color: 'var(--ink)',
-                }}>
-                  <div style={{
-                    width: 18, height: 18, borderRadius: '50%',
-                    background: isMine ? 'var(--moss)' : '#fff',
-                    border: '1px solid ' + (isMine ? 'var(--moss)' : 'var(--rule-2)'),
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                  }}>
-                    {isMine && <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#fff' }} />}
-                  </div>
-                  <span>{c}</span>
-                  {isMine && isAns && <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--moss-2)', fontFamily: 'var(--font-display)', fontWeight: 600 }}>✓ 정답</span>}
-                </div>
-              );
-            })}
-          </div>
-          <div style={{ paddingLeft: 28, marginTop: 8, fontSize: 11, color: 'var(--ink-3)', fontFamily: 'var(--font-mono)' }}>
-            출처 — <i>{q.from}</i>
+          {q.hint && (
+            <div style={{ paddingLeft: 28, marginTop: 6, fontSize: 11.5, color: 'var(--ink-3)', fontStyle: 'italic' }}>
+              힌트: {q.hint}
+            </div>
+          )}
+          <div style={{ paddingLeft: 28, marginTop: 10 }}>
+            <div style={{ fontSize: 11.5, color: 'var(--ink-3)', marginBottom: 6 }}>정답</div>
+            <div style={{
+              padding: '10px 14px', borderRadius: 9,
+              background: 'var(--paper-2)', border: '0.5px solid var(--moss)',
+              fontSize: 13, color: 'var(--ink)',
+            }}>
+              {q.answer}
+            </div>
           </div>
           <div style={{ paddingLeft: 28, marginTop: 8 }}>
             <textarea placeholder="내 답변 / 메모를 작성하세요" style={{
@@ -611,7 +661,7 @@ function QuizResult({ pot, quizCount }) {
   );
 }
 
-function SummaryResult({ pot }) {
+function SummaryResult({ pot, summary, keyPoints }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
       <div style={{
@@ -620,35 +670,28 @@ function SummaryResult({ pot }) {
       }}>
         🌿 {pot ? `${pot.emoji} ${pot.name} 화분의 TIL 핵심을 한 문서로 묶었어요.` : 'TIL 핵심을 한 문서로 묶었어요.'}
       </div>
-      <div>
-        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: 'var(--ink)', marginBottom: 8 }}>
-          이번 주, 프론트엔드 레이아웃의 진화
-        </h3>
-        <div style={{ fontSize: 13.5, color: 'var(--ink)', lineHeight: 1.85 }}>
-          이번 주의 키워드는 <b>"컨테이너 단위"</b>와 <b>"경계의 명확화"</b>다. CSS Container Queries는 미디어쿼리가 가진 "페이지 폭"이라는 한계를 넘어, 컴포넌트가 자신이 놓인 부모 박스에 반응하도록 만든다. 이는 디자인 시스템과 자연스럽게 맞닿는다.
-          <br /><br />
-          비슷한 맥락에서, React Server Component는 클라이언트와 서버의 경계를 <code style={{ fontFamily: 'var(--font-mono)', background: 'var(--paper-2)', padding: '1px 6px', borderRadius: 4 }}>"use client"</code> 지시어로 명확하게 가른다. 둘 다 "이 컴포넌트가 어디에서, 무엇에 의존해 동작하는가"를 코드로 드러내는 흐름이다.
-        </div>
-      </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-        {[
-          { title: '핵심 개념', items: ['Container Queries', 'use client / use server', 'B-tree / GIN 인덱스'] },
-          { title: '다음 학습 추천', items: ['CSS Subgrid 정리', 'RSC + Suspense 흐름', 'GIN 인덱스 실전 쿼리'] },
-        ].map((s, i) => (
-          <div key={i} style={{ padding: 16, borderRadius: 10, background: 'var(--paper-2)' }}>
-            <div className="eyebrow" style={{ marginBottom: 8 }}>{s.title}</div>
-            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {s.items.map((x, j) => (
-                <li key={j} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, color: 'var(--ink)' }}>
-                  <span style={{ width: 4, height: 4, borderRadius: 2, background: 'var(--moss)' }} />
-                  {x}
-                </li>
-              ))}
-            </ul>
+      {summary && (
+        <div>
+          <div style={{ fontSize: 13.5, color: 'var(--ink)', lineHeight: 1.85, whiteSpace: 'pre-wrap' }}>
+            {summary}
           </div>
-        ))}
-      </div>
+        </div>
+      )}
+
+      {keyPoints && keyPoints.length > 0 && (
+        <div style={{ padding: 16, borderRadius: 10, background: 'var(--paper-2)' }}>
+          <div className="eyebrow" style={{ marginBottom: 8 }}>핵심 포인트</div>
+          <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {keyPoints.map((point, i) => (
+              <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12.5, color: 'var(--ink)' }}>
+                <span style={{ width: 4, height: 4, borderRadius: 2, background: 'var(--moss)', marginTop: 6, flexShrink: 0 }} />
+                {point}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
