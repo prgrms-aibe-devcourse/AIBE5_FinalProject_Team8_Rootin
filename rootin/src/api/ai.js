@@ -38,7 +38,7 @@ export async function generateQuiz(potId, count) {
 export async function saveResult(type, potId, content) {
   return request('/api/v1/ai/results', {
     method: 'POST',
-    body: JSON.stringify({ type, potId, content }),
+    body: JSON.stringify({ type, potId, content: JSON.stringify(content) }),
   });
 }
 
