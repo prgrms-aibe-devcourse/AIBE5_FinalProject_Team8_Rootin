@@ -279,9 +279,12 @@ describe('생성 전/후 화면', () => {
   it('생성 버튼 클릭 후 로딩 메시지가 표시된다', async () => {
     generateQuiz.mockReturnValue(new Promise(() => {})); // 영원히 pending
     render(<AIScreen />);
-    await waitFor(() => screen.getByRole('button', { name: /만들기/i }));
+    // 버튼 존재 여부가 아닌 화분 목록 로딩 완료를 기다려 potId 설정 보장
+    await waitFor(() => expect(screen.getByText('코딩')).toBeInTheDocument());
     fireEvent.click(screen.getByRole('button', { name: /만들기/i }));
-    expect(screen.getByText('AI가 TIL을 분석하고 있어요...')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByText('AI가 TIL을 분석하고 있어요...')).toBeInTheDocument()
+    );
   });
 
   it('생성 완료 후 퀴즈 결과가 표시된다', async () => {
