@@ -78,28 +78,28 @@ const MOCK_SUMMARY_RESPONSE = {
 };
 
 const MOCK_SAVE_RESPONSE = {
-  resultId: 'result-001',
+  resultId: 1,                          // BE는 Long(숫자) 반환
   createdAt: '2026-05-28T10:00:00Z',
 };
 
-const MOCK_FETCH_RESULTS_RESPONSE = {
-  results: [
-    {
-      resultId: 'result-existing-1',
-      type: 'QUIZ',
-      potId: 1,    // BE 응답은 숫자 ID
-      content: MOCK_QUIZ_RESPONSE,
-      createdAt: '2026-05-25T10:00:00Z',
-    },
-    {
-      resultId: 'result-existing-2',
-      type: 'SUMMARY',
-      potId: 2,    // BE 응답은 숫자 ID
-      content: MOCK_SUMMARY_RESPONSE,
-      createdAt: '2026-05-24T10:00:00Z',
-    },
-  ],
-};
+// BE는 List<AiResultResponse> — 래퍼 없이 배열 직접 반환
+// content는 DB에 JSON 문자열로 저장되므로 String으로 반환됨
+const MOCK_FETCH_RESULTS_RESPONSE = [
+  {
+    resultId: 2,                          // BE는 Long(숫자)
+    type: 'QUIZ',
+    potId: 1,
+    content: JSON.stringify(MOCK_QUIZ_RESPONSE),   // BE는 String 반환
+    createdAt: '2026-05-25T10:00:00Z',
+  },
+  {
+    resultId: 3,                          // BE는 Long(숫자)
+    type: 'SUMMARY',
+    potId: 2,
+    content: JSON.stringify(MOCK_SUMMARY_RESPONSE), // BE는 String 반환
+    createdAt: '2026-05-24T10:00:00Z',
+  },
+];
 
 beforeEach(() => {
   getPots.mockResolvedValue(MOCK_POTS);
@@ -425,6 +425,7 @@ describe('결과 저장 및 보관함', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '결과 저장' }));
 
+    // api/ai.js의 saveResult는 content를 JSON.stringify해서 BE(String 타입)에 전달
     await waitFor(() =>
       expect(saveResult).toHaveBeenCalledWith('QUIZ', MOCK_POTS[0].id, MOCK_QUIZ_RESPONSE)
     );
@@ -457,7 +458,7 @@ describe('결과 저장 및 보관함', () => {
     fireEvent.click(screen.getAllByRole('button', { name: '삭제' })[0]);
 
     await waitFor(() =>
-      expect(deleteResult).toHaveBeenCalledWith('result-existing-1')
+      expect(deleteResult).toHaveBeenCalledWith(2)
     );
   });
 
