@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { USER, DEX } from './data.jsx';
+import { USER } from './data.jsx';
+import { getPlants } from './api/collection.js';
+import { DEX } from './data.jsx';
 import { generateSummary, generateQuiz, saveResult, fetchResults, deleteResult } from './api/ai.js';
 import { getPots } from './api/pot.js';
 import { getMe } from './api/user.js';
@@ -158,12 +160,80 @@ function EvoCard({ entry }) {
   );
 }
 
+function PlantCard({ plant }) {
+  const isRare = plant.rarity === '희귀';
+  const collectedDate = plant.collectedAt
+    ? new Date(plant.collectedAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' }).replace('. ', '.').slice(0, 5)
+    : null;
+
+  if (!plant.isCollected) {
+    return (
+      <div style={{
+        padding: '16px 20px', borderRadius: 14,
+        border: '0.5px solid var(--rule)', background: '#fff',
+        opacity: 0.75, display: 'flex', alignItems: 'center', gap: 14, position: 'relative',
+      }}>
+        <div style={{
+          width: 48, height: 48, borderRadius: 10,
+          background: '#f7f9f7', border: '0.5px solid var(--rule)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 24, filter: 'grayscale(1) opacity(0.3)',
+        }}>🌱</div>
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--ink-2)', fontFamily: 'var(--font-display)' }}>{plant.plantType}</div>
+          <div style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 3 }}>{isRare ? '✦ 희귀종' : '일반종'} · 미수집</div>
+        </div>
+        <div style={{ position: 'absolute', right: 20, top: '50%', transform: 'translateY(-50%)', fontSize: 18 }}>🔒</div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{
+      padding: '16px 20px', borderRadius: 14,
+      border: isRare ? '0.5px solid #ccc9f0' : '0.5px solid var(--rule)', background: '#fff',
+      display: 'flex', alignItems: 'center', gap: 14,
+    }}>
+      <div style={{
+        width: 48, height: 48, borderRadius: 10, flexShrink: 0,
+        background: isRare ? '#eef2fa' : '#eaf3de',
+        border: isRare ? '0.5px solid #afa9ec' : '0.5px solid #c8e0a8',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        {plant.imageUrl
+          ? <img src={plant.imageUrl} alt={plant.plantType} style={{ width: 36, height: 36, objectFit: 'contain' }} />
+          : <span style={{ fontSize: 24 }}>🌸</span>
+        }
+      </div>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)', fontFamily: 'var(--font-display)' }}>{plant.plantType}</div>
+        <div style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 3 }}>
+          {isRare ? '✦ 희귀종' : '일반종'} · 수확 완료
+        </div>
+      </div>
+      {collectedDate && (
+        <span style={{ fontSize: 11, color: 'var(--ink-3)', fontFamily: 'var(--font-mono)', marginRight: 8 }}>
+          {collectedDate}
+        </span>
+      )}
+      <Pill tone={isRare ? 'navy' : 'green'}>수확 완료</Pill>
+    </div>
+  );
+}
+
 function CollectionScreen() {
-  const growing = DEX.filter(d => d.state === 'growing');
-  const harvested = DEX.filter(d => d.state === 'harvested');
-  const locked = DEX.filter(d => d.state === 'locked');
-  const unlocked = DEX.filter(d => d.state !== 'locked').length;
-  const total = DEX.length;
+  const [plants, setPlants] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getPlants()
+      .then(data => setPlants(data?.plants ?? []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const collected = plants.filter(p => p.isCollected);
+  const locked    = plants.filter(p => !p.isCollected);
 
   return (
     <div style={{ padding: 32, maxWidth: 1100, margin: '0 auto' }}>
@@ -176,61 +246,48 @@ function CollectionScreen() {
             직접 키워낸 식물의 진화 기록
           </h2>
           <div style={{ fontSize: 13, color: 'var(--ink-2)', marginTop: 6 }}>
-            화분에서 자란 식물의 모든 성장 과정을 도감에 모아요. 호버하면 화분 레벨과 수확일을 볼 수 있어요.
+            화분에서 수확 완료한 식물이 도감에 기록돼요.
           </div>
         </div>
 
         <div style={{ display: 'flex', gap: 8 }}>
-          <div style={{
-            background: '#fff', border: '0.5px solid var(--rule)', borderRadius: 10,
-            padding: '10px 18px', textAlign: 'center', minWidth: 80,
-          }}>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, color: 'var(--ink)' }}>{growing.length}</div>
-            <div style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 2 }}>키우는 중</div>
-          </div>
-          <div style={{
-            background: '#fff', border: '0.5px solid var(--rule)', borderRadius: 10,
-            padding: '10px 18px', textAlign: 'center', minWidth: 80,
-          }}>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, color: 'var(--ink)' }}>{harvested.length}</div>
+          <div style={{ background: '#fff', border: '0.5px solid var(--rule)', borderRadius: 10, padding: '10px 18px', textAlign: 'center', minWidth: 80 }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, color: 'var(--ink)' }}>{collected.length}</div>
             <div style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 2 }}>수확 완료</div>
           </div>
-          <div style={{
-            background: '#fff', border: '0.5px solid var(--rule)', borderRadius: 10,
-            padding: '10px 18px', textAlign: 'center', minWidth: 80,
-          }}>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, color: '#3b6d11' }}>{unlocked} / {total}</div>
+          <div style={{ background: '#fff', border: '0.5px solid var(--rule)', borderRadius: 10, padding: '10px 18px', textAlign: 'center', minWidth: 80 }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, color: '#3b6d11' }}>{collected.length} / {plants.length}</div>
             <div style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 2 }}>종 해금</div>
           </div>
         </div>
       </div>
 
-      {/* 키우는 중 */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, marginTop: 8 }}>
-        <span style={{ fontSize: 13, color: 'var(--ink-2)', fontFamily: 'var(--font-display)', fontWeight: 500, whiteSpace: 'nowrap' }}>🌱 키우는 중</span>
-        <Pill tone="green">{growing.length}종</Pill>
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 30 }}>
-        {growing.map(e => <EvoCard key={e.no} entry={e} />)}
-      </div>
+      {loading && (
+        <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--ink-3)', fontSize: 13 }}>도감을 불러오는 중...</div>
+      )}
 
-      {/* 수확 완료 */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-        <span style={{ fontSize: 13, color: 'var(--ink-2)', fontFamily: 'var(--font-display)', fontWeight: 500, whiteSpace: 'nowrap' }}>🏆 수확 완료</span>
-        <Pill tone="navy">{harvested.length}종</Pill>
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 30 }}>
-        {harvested.map(e => <EvoCard key={e.no} entry={e} />)}
-      </div>
+      {!loading && (
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, marginTop: 8 }}>
+            <span style={{ fontSize: 13, color: 'var(--ink-2)', fontFamily: 'var(--font-display)', fontWeight: 500 }}>🏆 수확 완료</span>
+            <Pill tone="navy">{collected.length}종</Pill>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 30 }}>
+            {collected.length === 0
+              ? <div style={{ fontSize: 12.5, color: 'var(--ink-3)', padding: '16px 0' }}>아직 수확 완료한 식물이 없어요.</div>
+              : collected.map((p, i) => <PlantCard key={i} plant={p} />)
+            }
+          </div>
 
-      {/* 미해금 */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-        <span style={{ fontSize: 13, color: 'var(--ink-2)', fontFamily: 'var(--font-display)', fontWeight: 500, whiteSpace: 'nowrap' }}>🔒 미해금</span>
-        <Pill tone="pink">{locked.length}종</Pill>
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {locked.map(e => <EvoCard key={e.no} entry={e} />)}
-      </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+            <span style={{ fontSize: 13, color: 'var(--ink-2)', fontFamily: 'var(--font-display)', fontWeight: 500 }}>🔒 미수집</span>
+            <Pill tone="pink">{locked.length}종</Pill>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {locked.map((p, i) => <PlantCard key={i} plant={p} />)}
+          </div>
+        </>
+      )}
     </div>
   );
 }
