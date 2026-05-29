@@ -7,7 +7,7 @@ import { getPots } from './api/pot.js';
 import { getMe } from './api/user.js';
 import { Icon, Pill, Btn, Card, SectionHeader } from './ui.jsx';
 import { PixelPlant, PIXEL_SPECIES } from './pixel-plants.jsx';
-import { Plant, STAGE_META } from './plants.jsx';
+import { Plant, RootinLogo, STAGE_META } from './plants.jsx';
 
 // Collection (식물도감), AI, Profile, Auth screens
 
@@ -1108,7 +1108,7 @@ function AuthScreen({ onAuth }) {
           )}
           <div>
             <label style={{ fontSize: 11.5, color: 'var(--ink-3)', fontFamily: 'var(--font-display)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>이메일</label>
-            <input placeholder="you@example.com" defaultValue="soyeon@rootin.app" style={{
+            <input placeholder="you@example.com" style={{
               width: '100%', padding: '12px 14px', marginTop: 6,
               borderRadius: 10, border: '0.5px solid var(--rule-2)',
               fontSize: 14, outline: 'none', background: '#fff',
@@ -1117,7 +1117,7 @@ function AuthScreen({ onAuth }) {
           </div>
           <div>
             <label style={{ fontSize: 11.5, color: 'var(--ink-3)', fontFamily: 'var(--font-display)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>비밀번호</label>
-            <input type="password" placeholder="••••••••" defaultValue="rootinrootin" style={{
+            <input type="password" placeholder="••••••••" style={{
               width: '100%', padding: '12px 14px', marginTop: 6,
               borderRadius: 10, border: '0.5px solid var(--rule-2)',
               fontSize: 14, outline: 'none', background: '#fff',
