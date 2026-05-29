@@ -29,8 +29,9 @@ vi.mock('../api/pot.js', () => ({
   getPots: vi.fn(),
 }));
 
-vi.mock('../api/user.js', () => ({
-  getMe: vi.fn(),
+// UserContext mock — AIScreen은 useUser()로 포인트를 초기화
+vi.mock('../context/UserContext.jsx', () => ({
+  useUser: vi.fn(() => ({ user: { points: 1240 } })),
 }));
 
 import {
@@ -41,7 +42,7 @@ import {
   deleteResult,
 } from '../api/ai.js';
 import { getPots } from '../api/pot.js';
-import { getMe } from '../api/user.js';
+import { useUser } from '../context/UserContext.jsx';
 
 // ──────────────────────────────────────────────
 // Mock 데이터 상수 (BE 응답 구조 기준)
@@ -113,7 +114,7 @@ const MOCK_FETCH_RESULTS_RESPONSE = [
 
 beforeEach(() => {
   getPots.mockResolvedValue(MOCK_POTS);
-  getMe.mockResolvedValue(MOCK_ME);
+  useUser.mockReturnValue({ user: { points: MOCK_ME.point } });
   fetchResults.mockResolvedValue(MOCK_FETCH_RESULTS_RESPONSE);
   generateQuiz.mockResolvedValue(MOCK_QUIZ_RESPONSE);
   generateSummary.mockResolvedValue(MOCK_SUMMARY_RESPONSE);
@@ -167,20 +168,23 @@ describe('API 연동 — 화분 목록 및 포인트', () => {
     );
   });
 
-  it('페이지 진입 시 getMe()를 호출한다', async () => {
+  it('AIScreen은 getMe()를 직접 호출하지 않는다 — 포인트는 UserContext에서 가져온다', async () => {
     render(<AIScreen />);
-    await waitFor(() => expect(getMe).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(getPots).toHaveBeenCalledTimes(1));
+    // api/user.js의 getMe가 이 컴포넌트에서 호출되지 않아야 함
+    // (UserContext가 대신 처리)
+    expect(useUser).toHaveBeenCalled();
   });
 
-  it('getMe() 응답의 point로 보유 포인트가 초기화된다', async () => {
+  it('UserContext의 user.points로 보유 포인트가 초기화된다', async () => {
     render(<AIScreen />);
     await waitFor(() =>
       expect(screen.getByText(/1240P/)).toBeInTheDocument()
     );
   });
 
-  it('getMe() 실패 시 보유 포인트 기본값(0)이 유지된다', async () => {
-    getMe.mockRejectedValue(new Error('Not Implemented'));
+  it('UserContext user가 null이면 보유 포인트 기본값(0)이 표시된다', async () => {
+    useUser.mockReturnValue({ user: null });
     render(<AIScreen />);
     await waitFor(() =>
       expect(screen.getByText(/0P/)).toBeInTheDocument()
