@@ -63,8 +63,18 @@ const MOCK_ME = {
 
 const MOCK_QUIZ_RESPONSE = {
   quizzes: [
-    { question: 'CSS Container Queries에서 필수 속성은?', answer: 'container-type', hint: '컨테이너 선언 관련' },
-    { question: 'React에서 클라이언트 컴포넌트를 선언하는 지시어는?', answer: '"use client"', hint: null },
+    {
+      question: 'CSS Container Queries에서 필수 속성은?',
+      choices: ['display', 'container-type', 'position', 'overflow'],
+      answer: 'container-type',
+      hint: '컨테이너 선언 관련',
+    },
+    {
+      question: 'React에서 클라이언트 컴포넌트를 선언하는 지시어는?',
+      choices: ['"use server"', '"use strict"', '"use client"', '"use memo"'],
+      answer: '"use client"',
+      hint: null,
+    },
   ],
   usedPoint: 50,
   remainPoint: 1190,
@@ -537,5 +547,77 @@ describe('결과 저장 및 보관함', () => {
     await waitFor(() =>
       expect(screen.getByText('저장된 결과지가 없습니다.')).toBeInTheDocument()
     );
+  });
+});
+
+// ──────────────────────────────────────────────
+// 4지선다 QuizResult UI
+// ──────────────────────────────────────────────
+describe('4지선다 QuizResult UI', () => {
+  async function renderAndGenerate() {
+    render(<AIScreen />);
+    await waitFor(() => screen.getByRole('button', { name: /만들기/i }));
+    fireEvent.click(screen.getByRole('button', { name: /만들기/i }));
+    await waitFor(() => screen.getByText('CSS Container Queries에서 필수 속성은?'));
+  }
+
+  it('퀴즈 생성 후 각 문항의 선택지 4개가 버튼으로 렌더링된다', async () => {
+    await renderAndGenerate();
+    expect(screen.getByRole('button', { name: /container-type/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /display/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /position/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /overflow/ })).toBeInTheDocument();
+  });
+
+  it('모든 문항을 선택하기 전에는 채점하기 버튼이 비활성화된다', async () => {
+    await renderAndGenerate();
+    const gradeBtn = screen.getByRole('button', { name: '채점하기' });
+    expect(gradeBtn).toBeDisabled();
+  });
+
+  it('모든 문항을 선택하면 채점하기 버튼이 활성화된다', async () => {
+    await renderAndGenerate();
+    fireEvent.click(screen.getByRole('button', { name: /container-type/ }));
+    fireEvent.click(screen.getByRole('button', { name: /"use client"/ }));
+    expect(screen.getByRole('button', { name: '채점하기' })).not.toBeDisabled();
+  });
+
+  it('채점 후 정답 버튼에 정답 표시가 된다', async () => {
+    await renderAndGenerate();
+    fireEvent.click(screen.getByRole('button', { name: /container-type/ }));
+    fireEvent.click(screen.getByRole('button', { name: /"use client"/ }));
+    fireEvent.click(screen.getByRole('button', { name: '채점하기' }));
+    // 채점 완료 버튼이 나타나면 채점 완료
+    expect(screen.getByRole('button', { name: '채점 완료' })).toBeInTheDocument();
+  });
+
+  it('전체 정답이면 전체 정답 메시지가 표시된다', async () => {
+    await renderAndGenerate();
+    fireEvent.click(screen.getByRole('button', { name: /container-type/ }));
+    fireEvent.click(screen.getByRole('button', { name: /"use client"/ }));
+    fireEvent.click(screen.getByRole('button', { name: '채점하기' }));
+    await waitFor(() =>
+      expect(screen.getByText(/전체 정답/)).toBeInTheDocument()
+    );
+  });
+
+  it('오답이 있으면 몇 개 정답인지 표시한다', async () => {
+    await renderAndGenerate();
+    fireEvent.click(screen.getByRole('button', { name: /display/ })); // 오답
+    fireEvent.click(screen.getByRole('button', { name: /"use client"/ })); // 정답
+    fireEvent.click(screen.getByRole('button', { name: '채점하기' }));
+    await waitFor(() =>
+      expect(screen.getByText(/2문제 중 1개 정답/)).toBeInTheDocument()
+    );
+  });
+
+  it('채점 후에는 선택지를 변경할 수 없다', async () => {
+    await renderAndGenerate();
+    fireEvent.click(screen.getByRole('button', { name: /container-type/ }));
+    fireEvent.click(screen.getByRole('button', { name: /"use client"/ }));
+    fireEvent.click(screen.getByRole('button', { name: '채점하기' }));
+    // 채점 후 다른 보기 클릭해도 채점 완료 버튼이 유지됨 (상태 변경 없음)
+    fireEvent.click(screen.getByRole('button', { name: /display/ }));
+    expect(screen.getByRole('button', { name: '채점 완료' })).toBeInTheDocument();
   });
 });

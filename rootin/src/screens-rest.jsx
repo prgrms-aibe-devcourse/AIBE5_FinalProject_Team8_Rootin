@@ -681,16 +681,60 @@ function AIScreen() {
 }
 
 function QuizResult({ pot, quizCount, quizzes }) {
+  const list = quizzes ?? [];
+  // { [index]: choiceText }
+  const [selected, setSelected] = useState({});
+  const [graded, setGraded] = useState(false);
+
+  const allAnswered = list.length > 0 && Object.keys(selected).length === list.length;
+  const correctCount = graded
+    ? list.filter((q, i) => selected[i] === q.answer).length
+    : 0;
+
+  function handleSelect(idx, choice) {
+    if (graded) return;
+    setSelected(prev => ({ ...prev, [idx]: choice }));
+  }
+
+  function handleGrade() {
+    setGraded(true);
+  }
+
+  function getChoiceStyle(q, i, choice) {
+    const base = {
+      width: '100%', textAlign: 'left',
+      padding: '10px 14px', borderRadius: 9,
+      fontSize: 13, cursor: graded ? 'default' : 'pointer',
+      transition: 'background 0.15s',
+    };
+    if (!graded) {
+      const isSelected = selected[i] === choice;
+      return {
+        ...base,
+        background: isSelected ? 'var(--moss)' : 'var(--paper-2)',
+        color: isSelected ? '#fff' : 'var(--ink)',
+        border: isSelected ? '0.5px solid var(--moss)' : '0.5px solid var(--rule)',
+        fontWeight: isSelected ? 600 : 400,
+      };
+    }
+    // 채점 후
+    const isCorrect = choice === q.answer;
+    const isSelected = selected[i] === choice;
+    if (isCorrect) return { ...base, background: '#e8f5e9', color: '#2e7d32', border: '0.5px solid #81c784', fontWeight: 600 };
+    if (isSelected) return { ...base, background: '#ffebee', color: '#c62828', border: '0.5px solid #e57373' };
+    return { ...base, background: 'var(--paper-2)', color: 'var(--ink-3)', border: '0.5px solid var(--rule)' };
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
       <div style={{
         padding: 16, background: 'var(--paper-2)', borderRadius: 10,
         fontSize: 12.5, color: 'var(--ink-2)', borderLeft: '2px solid var(--moss)',
       }}>
-        💡 {pot?.emoji} {pot?.name} 화분의 TIL에서 핵심 개념 {quizCount}문항을 추출했어요. 답을 적고 저장하면 학습 기록에 남아요.
+        💡 {pot?.emoji} {pot?.name} 화분의 TIL에서 핵심 개념 {quizCount}문항을 추출했어요. 보기를 선택하고 채점해보세요.
       </div>
 
-      {(quizzes ?? []).map((q, i) => (
+      {list.map((q, i) => (
         <div key={i}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
             <span style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: 'var(--moss-2)' }}>
@@ -703,28 +747,52 @@ function QuizResult({ pot, quizCount, quizzes }) {
               힌트: {q.hint}
             </div>
           )}
-          <div style={{ paddingLeft: 28, marginTop: 10 }}>
-            <div style={{ fontSize: 11.5, color: 'var(--ink-3)', marginBottom: 6 }}>정답</div>
-            <div style={{
-              padding: '10px 14px', borderRadius: 9,
-              background: 'var(--paper-2)', border: '0.5px solid var(--moss)',
-              fontSize: 13, color: 'var(--ink)',
-            }}>
-              {q.answer}
-            </div>
-          </div>
-          <div style={{ paddingLeft: 28, marginTop: 8 }}>
-            <textarea placeholder="내 답변 / 메모를 작성하세요" style={{
-              width: '100%', minHeight: 48,
-              padding: '10px 12px', borderRadius: 8,
-              border: '0.5px solid var(--rule)',
-              fontSize: 12.5, color: 'var(--ink)',
-              outline: 'none', resize: 'vertical',
-              background: '#fcfdfb',
-            }} />
+          <div style={{ paddingLeft: 28, marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {(q.choices ?? []).map((choice, ci) => (
+              <button
+                key={ci}
+                onClick={() => handleSelect(i, choice)}
+                style={getChoiceStyle(q, i, choice)}
+              >
+                <span style={{ marginRight: 8, opacity: 0.5 }}>{['①', '②', '③', '④'][ci]}</span>
+                {choice}
+              </button>
+            ))}
           </div>
         </div>
       ))}
+
+      {list.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, marginTop: 8 }}>
+          {graded && (
+            <div style={{
+              padding: '14px 24px', borderRadius: 12, textAlign: 'center',
+              background: correctCount === list.length ? '#e8f5e9' : '#fff8e1',
+              border: `1px solid ${correctCount === list.length ? '#81c784' : '#ffd54f'}`,
+              fontSize: 14, fontWeight: 600,
+              color: correctCount === list.length ? '#2e7d32' : '#f57f17',
+            }}>
+              {correctCount === list.length
+                ? `🎉 전체 정답! ${list.length}문제 모두 맞혔어요.`
+                : `${list.length}문제 중 ${correctCount}개 정답이에요.`}
+            </div>
+          )}
+          <button
+            onClick={handleGrade}
+            disabled={!allAnswered || graded}
+            style={{
+              padding: '12px 32px', borderRadius: 10,
+              background: allAnswered && !graded ? 'var(--moss)' : 'var(--rule)',
+              color: allAnswered && !graded ? '#fff' : 'var(--ink-3)',
+              border: 'none', fontSize: 14, fontWeight: 600,
+              cursor: allAnswered && !graded ? 'pointer' : 'not-allowed',
+              transition: 'background 0.15s',
+            }}
+          >
+            {graded ? '채점 완료' : '채점하기'}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
