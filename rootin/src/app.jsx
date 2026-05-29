@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
-import { USER, POTS, DEX } from './data.jsx';
+import { useState } from 'react';
+import { POTS, DEX } from './data.jsx';
 import { Icon } from './ui.jsx';
 import { Plant, RootinLogo } from './plants.jsx';
 import { DashboardScreen } from './screens-dashboard.jsx';
 import { EditorScreen } from './screens-editor.jsx';
 import { GardenScreen, PotDetailScreen } from './screens-garden.jsx';
 import { CollectionScreen, AIScreen, ProfileScreen, AuthScreen } from './screens-rest.jsx';
+import { UserProvider, useUser } from './context/UserContext.jsx';
 
 // App shell — sidebar + topbar + screen routing
 
@@ -20,6 +21,8 @@ const NAV = [
 
 
 function Sidebar({ current, onNav }) {
+  const { user } = useUser();
+
   return (
     <aside style={{
       width: 232,
@@ -84,8 +87,8 @@ function Sidebar({ current, onNav }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <Plant stage="leaf" size={40} />
           <div>
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, color: 'var(--ink)', fontSize: 14 }}>연속 {USER.streak}일</div>
-            <div style={{ fontSize: 10.5, color: 'var(--ink-3)', marginTop: 1 }}>최고 {USER.bestStreak}일</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, color: 'var(--ink)', fontSize: 14 }}>연속 {user?.streak ?? 0}일</div>
+            <div style={{ fontSize: 10.5, color: 'var(--ink-3)', marginTop: 1 }}>최고 {user?.bestStreak ?? 0}일</div>
           </div>
         </div>
       </div>
@@ -94,6 +97,9 @@ function Sidebar({ current, onNav }) {
 }
 
 function TopBar({ title, subtitle, onLogout }) {
+  const { user } = useUser();
+  const initial = user?.name?.[0] ?? '?';
+
   return (
     <header style={{
       display: 'flex', alignItems: 'center', gap: 16,
@@ -127,37 +133,24 @@ function TopBar({ title, subtitle, onLogout }) {
         padding: '5px 14px 5px 5px', borderRadius: 999,
         background: '#fff', border: '0.5px solid var(--rule)',
       }}>
-        <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'linear-gradient(135deg, #a8d5b5, #3d8b5e)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: 12 }}>소</div>
+        <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'linear-gradient(135deg, #a8d5b5, #3d8b5e)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: 12 }}>{initial}</div>
         <div style={{ textAlign: 'left' }}>
-          <div style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--ink)' }}>{USER.name}</div>
-          <div style={{ fontSize: 10, color: 'var(--ink-3)', fontFamily: 'var(--font-mono)' }}>@{USER.handle}</div>
+          <div style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--ink)' }}>{user?.name ?? ''}</div>
+          <div style={{ fontSize: 10, color: 'var(--ink-3)', fontFamily: 'var(--font-mono)' }}>@{user?.handle ?? ''}</div>
         </div>
       </button>
     </header>
   );
 }
 
-function App() {
+function AppShell() {
+  const { setUserFromApi, clearUser } = useUser();
   const [screen, setScreen] = useState('dashboard');
   const [authed, setAuthed] = useState(!!localStorage.getItem('accessToken'));
-  const [user, setUser] = useState(null);
-  const [potFocus, setPotFocus] = useState(null); // pot id when entering detail
-
-  useEffect(() => {
-    if (authed && !user) {
-      import('./api/user.js').then(({ getMe }) =>
-        getMe().then(setUser).catch(() => {
-          // 토큰이 만료됐거나 유효하지 않으면 로그아웃 처리
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
-          setAuthed(false);
-        })
-      );
-    }
-  }, [authed]);
+  const [potFocus, setPotFocus] = useState(null);
 
   const titles = {
-    dashboard:  { title: '안녕, 소연 🌱', subtitle: 'Dashboard · 2026.05.22 금요일' },
+    dashboard:  { title: '안녕하세요 🌱', subtitle: 'Dashboard · 오늘' },
     editor:     { title: '오늘의 TIL 작성', subtitle: 'New entry' },
     garden:     { title: '나의 정원', subtitle: 'Garden · 4개의 화분' },
     'pot-detail': { title: potFocus ? `${POTS.find(p => p.id === potFocus)?.emoji} ${POTS.find(p => p.id === potFocus)?.name}` : '화분', subtitle: 'Garden / Detail' },
@@ -167,7 +160,10 @@ function App() {
   };
 
   if (!authed) return (
-    <AuthScreen onAuth={(userData) => { setUser(userData); setAuthed(true); }} />
+    <AuthScreen onAuth={(userData) => {
+      setUserFromApi(userData);
+      setAuthed(true);
+    }} />
   );
 
   const meta = titles[screen] || { title: '', subtitle: '' };
@@ -178,7 +174,7 @@ function App() {
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <TopBar title={meta.title} subtitle={meta.subtitle} onLogout={() => {
           import('./api/auth.js').then(({ logout }) => logout().catch(() => {}));
-          setUser(null);
+          clearUser();
           setAuthed(false);
         }} />
         <div className="scrollbar" style={{ flex: 1, overflow: 'auto' }}>
@@ -192,6 +188,17 @@ function App() {
         </div>
       </main>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <UserProvider onAuthExpired={() => {
+      // 토큰 만료 시 페이지 리로드로 로그아웃 처리
+      window.location.reload();
+    }}>
+      <AppShell />
+    </UserProvider>
   );
 }
 
