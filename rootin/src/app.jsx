@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { USER, POTS, DEX } from './data.jsx';
 import { Icon } from './ui.jsx';
 import { Plant, RootinLogo } from './plants.jsx';
@@ -139,8 +139,22 @@ function TopBar({ title, subtitle, onLogout }) {
 
 function App() {
   const [screen, setScreen] = useState('dashboard');
-  const [authed, setAuthed] = useState(true);
+  const [authed, setAuthed] = useState(!!localStorage.getItem('accessToken'));
+  const [user, setUser] = useState(null);
   const [potFocus, setPotFocus] = useState(null); // pot id when entering detail
+
+  useEffect(() => {
+    if (authed && !user) {
+      import('./api/user.js').then(({ getMe }) =>
+        getMe().then(setUser).catch(() => {
+          // 토큰이 만료됐거나 유효하지 않으면 로그아웃 처리
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          setAuthed(false);
+        })
+      );
+    }
+  }, [authed]);
 
   const titles = {
     dashboard:  { title: '안녕, 소연 🌱', subtitle: 'Dashboard · 2026.05.22 금요일' },
@@ -152,7 +166,9 @@ function App() {
     profile:    { title: '내 계정', subtitle: 'Account' },
   };
 
-  if (!authed) return <AuthScreen onAuth={() => setAuthed(true)} />;
+  if (!authed) return (
+    <AuthScreen onAuth={(userData) => { setUser(userData); setAuthed(true); }} />
+  );
 
   const meta = titles[screen] || { title: '', subtitle: '' };
 
@@ -160,7 +176,11 @@ function App() {
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--paper)', minWidth: 1180 }} data-screen-label={screen}>
       <Sidebar current={screen.startsWith('pot') ? 'garden' : screen} onNav={s => setScreen(s)} />
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <TopBar title={meta.title} subtitle={meta.subtitle} onLogout={() => setAuthed(false)} />
+        <TopBar title={meta.title} subtitle={meta.subtitle} onLogout={() => {
+          import('./api/auth.js').then(({ logout }) => logout().catch(() => {}));
+          setUser(null);
+          setAuthed(false);
+        }} />
         <div className="scrollbar" style={{ flex: 1, overflow: 'auto' }}>
           {screen === 'dashboard'  && <DashboardScreen onNav={setScreen} />}
           {screen === 'editor'     && <EditorScreen onNav={setScreen} />}
