@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
-import { USER } from './data.jsx';
 import { getPlants } from './api/collection.js';
 import { DEX } from './data.jsx';
 import { generateSummary, generateQuiz, saveResult, fetchResults, deleteResult } from './api/ai.js';
 import { getPots } from './api/pot.js';
-import { getMe } from './api/user.js';
 import { Icon, Pill, Btn, Card, SectionHeader } from './ui.jsx';
 import { PixelPlant, PIXEL_SPECIES } from './pixel-plants.jsx';
 import { Plant, RootinLogo, STAGE_META } from './plants.jsx';
+import { useUser } from './context/UserContext.jsx';
 
 // Collection (식물도감), AI, Profile, Auth screens
 
@@ -364,6 +363,7 @@ function PotCard({ pot, selected, onClick }) {
 }
 
 function AIScreen() {
+  const { user } = useUser();
   const [mode, setMode] = useState('quiz'); // quiz | summary — 입력 UI 탭 선택
   const [resultMode, setResultMode] = useState('quiz'); // quiz | summary — 현재 표시 중인 결과 타입
   const [potId, setPotId] = useState(null);
@@ -375,8 +375,8 @@ function AIScreen() {
   const [aiResult, setAiResult] = useState(null);
   // 에러 메시지 (null이면 에러 없음)
   const [error, setError] = useState(null);
-  // 포인트 — 진입 시 getMe()로 초기화, AI 응답의 remainPoint로 즉시 갱신
-  const [remainPoint, setRemainPoint] = useState(0);
+  // 포인트 — Context의 user.points로 초기화, AI 응답의 remainPoint로 즉시 갱신
+  const [remainPoint, setRemainPoint] = useState(user?.points ?? 0);
 
   // 화분 목록 — 진입 시 getPots()로 로딩
   const [pots, setPots] = useState([]);
@@ -408,16 +408,7 @@ function AIScreen() {
         setPotsLoading(false);
       });
 
-    // 보유 포인트 로딩 — 실패 시 기본값(0) 유지
-    getMe()
-      .then(data => {
-        if (data?.point != null) {
-          setRemainPoint(data.point);
-        }
-      })
-      .catch(() => {
-        // /api/v1/users/me 미구현 시 조용히 무시
-      });
+    // 보유 포인트 — UserContext에서 초기화됨 (별도 getMe() 호출 불필요)
   }, []);
 
   // 페이지 진입 시 보관함 목록 로딩
@@ -892,9 +883,10 @@ function SummaryResult({ pot, summary, keyPoints }) {
 // === Profile Screen ===
 
 function ProfileScreen() {
+  const { user } = useUser();
   const [editing, setEditing] = useState(false);
-  const [nickname, setNickname] = useState(USER.name);
-  const [bio, setBio] = useState(USER.bio);
+  const [nickname, setNickname] = useState(user?.name ?? '');
+  const [bio, setBio] = useState(user?.bio ?? '');
 
   return (
     <div style={{ padding: 32, maxWidth: 1000, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 22 }}>
@@ -936,11 +928,11 @@ function ProfileScreen() {
               <>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
                   <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: 'var(--ink)' }}>{nickname}</h2>
-                  <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--ink-3)', fontSize: 13 }}>@{USER.handle}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--ink-3)', fontSize: 13 }}>@{user?.handle ?? ''}</span>
                 </div>
                 <div style={{ fontSize: 13, color: 'var(--ink-2)', marginTop: 6 }}>{bio}</div>
                 <div style={{ fontSize: 11, color: 'var(--ink-3)', fontFamily: 'var(--font-mono)', marginTop: 8 }}>
-                  {USER.joinedAt}부터 Rootin과 함께
+                  {user?.joinedAt ?? ''}부터 Rootin과 함께
                 </div>
               </>
             )}
@@ -953,10 +945,10 @@ function ProfileScreen() {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0, marginTop: 24, paddingTop: 22, borderTop: '0.5px solid var(--rule)' }}>
           {[
-            { label: '누적 TIL', value: USER.totalTil + '개' },
-            { label: '연속 기록', value: USER.streak + '일' },
+            { label: '누적 TIL', value: (user?.totalTil ?? 0) + '개' },
+            { label: '연속 기록', value: (user?.streak ?? 0) + '일' },
             { label: '수확한 식물', value: '5종' },
-            { label: '보유 포인트', value: USER.points + 'P' },
+            { label: '보유 포인트', value: (user?.points ?? 0) + 'P' },
           ].map((s, i) => (
             <div key={i} style={{
               borderRight: i < 3 ? '0.5px solid var(--rule)' : 'none',
@@ -974,7 +966,7 @@ function ProfileScreen() {
         <SectionHeader eyebrow="계정 관리" title="설정" />
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {[
-            { label: '이메일', value: USER.email, sub: '구글 계정 연동됨' },
+            { label: '이메일', value: user?.email ?? '', sub: '구글 계정 연동됨' },
             { label: '비밀번호', value: '••••••••', action: '변경' },
             { label: '연결된 SNS', value: '🟢 Google · 🟡 Kakao (예정)' },
             { label: '알림', value: '데일리 리마인드 22:00', action: '설정' },
