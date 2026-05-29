@@ -1,13 +1,5 @@
 import { request } from './client.js';
 
-export async function generateSummary(potId) {
-  return request('/api/v1/ai/summary', { method: 'POST', body: JSON.stringify({ potId }) });
-}
-
-export async function generateQuiz(potId, count) {
-  return request('/api/v1/ai/quiz', { method: 'POST', body: JSON.stringify({ potId, count }) });
-}
-
 /**
  * TIL 요약 생성
  * POST /api/v1/ai/summary
