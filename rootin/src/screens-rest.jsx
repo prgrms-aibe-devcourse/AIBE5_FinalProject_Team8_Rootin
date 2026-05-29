@@ -307,7 +307,8 @@ function PotCard({ pot, selected, onClick }) {
 }
 
 function AIScreen() {
-  const [mode, setMode] = useState('quiz'); // quiz | summary
+  const [mode, setMode] = useState('quiz'); // quiz | summary — 입력 UI 탭 선택
+  const [resultMode, setResultMode] = useState('quiz'); // quiz | summary — 현재 표시 중인 결과 타입
   const [potId, setPotId] = useState(null);
   const [quizCount, setQuizCount] = useState(5);
   const [generating, setGenerating] = useState(false);
@@ -394,6 +395,7 @@ function AIScreen() {
   // 보관함 항목 클릭 — 결과창에 바인딩
   const handleSelectSavedItem = (item) => {
     setMode(item.type);
+    setResultMode(item.type);
     if (item.pot) setPotId(item.pot.id);
     if (item.quizCount) setQuizCount(item.quizCount);
     setAiResult(item.content ?? null);
@@ -416,6 +418,7 @@ function AIScreen() {
 
       setAiResult(data);
       setRemainPoint(data.remainPoint);
+      setResultMode(mode);
       setGenerated(true);
     } catch (err) {
       if (err.status === 402) {
@@ -437,19 +440,19 @@ function AIScreen() {
     if (!generated || !selectedPot || !aiResult) return;
 
     try {
-      const apiType = mode === 'quiz' ? 'QUIZ' : 'SUMMARY';
+      const apiType = resultMode === 'quiz' ? 'QUIZ' : 'SUMMARY';
       const saved_res = await saveResult(apiType, potId, aiResult);
 
       const now = new Date();
       const date = `${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`;
-      const title = mode === 'quiz'
+      const title = resultMode === 'quiz'
         ? `${selectedPot.title} 화분 복습 문제 (${quizCount}문항)`
         : `${selectedPot.title} 화분 요약본`;
 
       setSavedResults(prev => [
         {
           id: saved_res.resultId,
-          type: mode,
+          type: resultMode,
           title,
           date,
           quizCount: mode === 'quiz' ? quizCount : undefined,
@@ -642,7 +645,7 @@ function AIScreen() {
       <div>
         <SectionHeader
           eyebrow="AI 결과지"
-          title={mode === 'quiz' ? `복습 문제 (${quizCount}문항)` : 'TIL 요약 결과지'}
+          title={resultMode === 'quiz' ? `복습 문제 (${quizCount}문항)` : 'TIL 요약 결과지'}
           action={generated ? (
             <div style={{ display: 'flex', gap: 8 }}>
               <Btn variant="secondary" size="sm" onClick={handleGenerate}>다시 생성</Btn>
@@ -666,7 +669,7 @@ function AIScreen() {
                 화분을 선택하고 생성 버튼을 눌러주세요
               </div>
             </div>
-          ) : mode === 'quiz' ? (
+          ) : resultMode === 'quiz' ? (
             <QuizResult pot={selectedPot} quizCount={quizCount} quizzes={aiResult?.quizzes ?? null} />
           ) : (
             <SummaryResult pot={selectedPot} summary={aiResult?.summary ?? null} keyPoints={aiResult?.keyPoints ?? null} />

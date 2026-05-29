@@ -318,6 +318,31 @@ describe('생성 전/후 화면', () => {
 
     expect(screen.getByRole('button', { name: '결과 저장' })).toBeInTheDocument();
   });
+
+  it('퀴즈 생성 후 TIL 요약 탭으로 전환해도 SectionHeader 타이틀이 복습 문제로 유지된다', async () => {
+    render(<AIScreen />);
+    await waitFor(() => screen.getByRole('button', { name: /만들기/i }));
+    fireEvent.click(screen.getByRole('button', { name: /만들기/i }));
+    await waitFor(() => expect(screen.getByRole('button', { name: '결과 저장' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: /TIL 요약/i }));
+
+    expect(screen.getByRole('heading', { name: /복습 문제/ })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'TIL 요약 결과지' })).not.toBeInTheDocument();
+  });
+
+  it('퀴즈 생성 후 TIL 요약 탭으로 전환해도 퀴즈 결과 컴포넌트가 유지된다', async () => {
+    render(<AIScreen />);
+    await waitFor(() => screen.getByRole('button', { name: /만들기/i }));
+    fireEvent.click(screen.getByRole('button', { name: /만들기/i }));
+    await waitFor(() =>
+      expect(screen.getByText('CSS Container Queries에서 필수 속성은?')).toBeInTheDocument()
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /TIL 요약/i }));
+
+    expect(screen.getByText('CSS Container Queries에서 필수 속성은?')).toBeInTheDocument();
+  });
 });
 
 // ──────────────────────────────────────────────
